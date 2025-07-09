@@ -10,8 +10,8 @@ noncomputable def ramificationIdx : ℕ := Ideal.ramificationIdx (algebraMap A B
 
 noncomputable def inertiaDeg : ℕ := Ideal.inertiaDeg (maximalIdeal A) (maximalIdeal B)
 
-instance : Algebra (ResidueField A) (ResidueField B) :=
-  Ideal.Quotient.algebraQuotientOfLEComap <| le_of_eq (((local_hom_TFAE <| algebraMap A B).out 0 4 rfl rfl).mp is_local).symm
+-- instance : Algebra (ResidueField A) (ResidueField B) :=
+--   Ideal.Quotient.algebraQuotientOfLEComap <| le_of_eq (((local_hom_TFAE <| algebraMap A B).out 0 4 rfl rfl).mp is_local).symm
 
 variable {A B}
 
