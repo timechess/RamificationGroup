@@ -107,7 +107,7 @@ section int_closure_discrete
 variable [IsDiscrete vK.v] [CompleteSpace K]
 variable {vL : Valuation L ℤₘ₀}
 
-theorem nontrivial_of_valuation_extension (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) : vL.Nontrivial := by
+theorem nontrivial_of_valuation_extension (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) : vL.IsNontrivial := by
   rcases exists_isUniformizer_of_isDiscrete vK.v with ⟨π, hp⟩
   use (algebraMap K L) π
   constructor
@@ -121,10 +121,10 @@ theorem nontrivial_of_valuation_extension (h : vK.v.IsEquiv <| vL.comap (algebra
 theorem extension_valuation_equiv_extendedValuation_of_discrete
   (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) :
     vL.IsEquiv (extendedValuation K L) := by
-  letI : vL.Nontrivial := nontrivial_of_valuation_extension h
-  apply IsEquiv.trans (isEquiv_ofNontrivial vL) (isEquiv_of_le_one_le_one _).symm
+  letI : vL.IsNontrivial := nontrivial_of_valuation_extension h
+  apply IsEquiv.trans (isEquiv_ofIsNontrivial vL) (isEquiv_of_le_one_le_one _).symm
   intro x
-  rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, ← (isEquiv_iff_val_le_one).mp (isEquiv_ofNontrivial vL)]
+  rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, ← (isEquiv_iff_val_le_one).mp (isEquiv_ofIsNontrivial vL)]
   apply mem_integer_of_mem_integral_closure h
 
 theorem extension_integer_eq_extendedValuation_of_discrete (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) :
