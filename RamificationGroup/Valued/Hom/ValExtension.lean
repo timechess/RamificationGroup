@@ -73,55 +73,11 @@ theorem val_map_eq_one_iff (x : R) : v (f x) = 1 ↔ v x = 1 := by
 
 end Valued
 
--- /--
--- The class `IsValExtension R A` states that the valuation of `A` is an extension of the valuation
--- on `R`. More precisely, the valuation on `R` is equivlent to the comap of the valuation on `A`.
--- -/
-
--- class IsValExtension (R A : Type*) {ΓR ΓA : outParam Type*} [CommRing R] [Ring A]
---   [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA]
---   [Algebra R A] [vR : Valued R ΓR] [vA : Valued A ΓA] : Prop where
---   /-- The valuation on `R` is equivlent to the comap of the valuation on `A` -/
---   val_isEquiv_comap : vR.v.IsEquiv <| vA.v.comap (algebraMap R A)
-
 namespace IsValExtension
-
--- section CoeLemma
 
 variable {R A : Type*} {ΓR ΓA : outParam Type*} [CommRing R] [Ring A]
     [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA]
     [Algebra R A] [vR : Valued R ΓR] [vA : Valued A ΓA] [IsValExtension vR.v vA.v]
-
--- @[simp]
--- theorem val_map_le_iff (x y : R) : v (algebraMap R A x) ≤ v (algebraMap R A y) ↔ v x ≤ v y :=
---   Valued.val_map_le_iff (f := algebraMap R A) val_isEquiv_comap  x y
-
--- @[simp]
--- theorem val_map_lt_iff (x y : R) : v (algebraMap R A x) < v (algebraMap R A y) ↔ v x < v y :=
---   Valued.val_map_lt_iff (f := algebraMap R A) val_isEquiv_comap x y
-
--- @[simp]
--- theorem val_map_eq_iff (x y : R) : v (algebraMap R A x) = v (algebraMap R A y) ↔ v x = v y :=
---   Valued.val_map_eq_iff (f := algebraMap R A) val_isEquiv_comap x y
-
--- @[simp]
--- theorem val_map_le_one_iff (x : R) : v (algebraMap R A x) ≤ 1 ↔ v x ≤ 1 :=
---   Valued.val_map_le_one_iff (f := algebraMap R A) val_isEquiv_comap x
-
--- -- @[simp]
--- -- theorem val_map_lt_one_iff (x : R) : v (algebraMap R A x) < 1 ↔ v x < 1 :=
--- --   Valued.val_map_lt_one_iff (f := algebraMap R A) val_isEquiv_comap x
-
--- @[simp]
--- theorem val_map_eq_one_iff (x : R) : v (algebraMap R A x) = 1 ↔ v x = 1 :=
---   Valued.val_map_eq_one_iff (f := algebraMap R A) val_isEquiv_comap x
-
--- instance id : IsValExtension R R where
---   val_isEquiv_comap := by
---     simp only [Algebra.id.map_eq_id, comap_id]
---     rfl
-
--- end CoeLemma
 
 section mk'
 
@@ -197,11 +153,6 @@ instance integerAlgebra : Algebra vR.v.integer vA.v.integer where
 theorem coe_algebraMap_integer (r : vR.v.integer) :
     ((algebraMap vR.v.integer vA.v.integer) r : A) = (algebraMap R A) (r : R) := by
   rfl
-
--- instance instIsScalarTowerInteger : IsScalarTower vR.v.integer vA.v.integer A where
---   smul_assoc x y z := by
---     simp only [Algebra.smul_def]
---     exact mul_assoc _ _ _
 
 end Integer
 

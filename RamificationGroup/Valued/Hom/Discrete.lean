@@ -183,21 +183,5 @@ theorem algHom_preserve_val_of_complete (f : L →ₐ[K] L) : vL.v.IsEquiv <| vL
 
 theorem algEquiv_preserve_val_of_complete (f : L ≃ₐ[K] L) : vL.v.IsEquiv <| vL.v.comap f := algHom_preserve_val_of_complete f.toAlgHom
 
-/-
--- `should be changed into G_-1 = Top, into a later file`
-variable (K L) in
-def fromAlgEquiv : (L ≃ₐ[K] L) →* (L ≃ₐv[K] L) where
-  toFun := fun f ↦ mk' f <| algEquiv_preserve_val f
-  map_one' := rfl
-  map_mul' := sorry
-
-variable (K L) in
-def equivAlgEquiv : (L ≃ₐ[K] L) ≃* (L ≃ₐv[K] L) := {
-  fromAlgEquiv K L with
-  invFun := toAlgEquiv
-  left_inv := sorry
-  right_inv := sorry
-}
--/
 
 end DiscreteValuation

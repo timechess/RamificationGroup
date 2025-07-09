@@ -38,20 +38,24 @@ end hom_eq_iff_integer
 
 section lift
 
+--exist in mathlib 4.19.0
+theorem Valuation.IsEquiv.le_one_iff_le_one' {R : Type*} {Γ₀ : Type*} {Γ'₀ : Type*} [Ring R] [LinearOrderedCommMonoidWithZero Γ₀] [LinearOrderedCommMonoidWithZero Γ'₀] {v₁ : Valuation R Γ₀} {v₂ : Valuation R Γ'₀} (h : v₁.IsEquiv v₂) {x : R} :
+v₁ x ≤ 1 ↔ v₂ x ≤ 1 := by sorry
+
 namespace Valued
 
 section integer
 
 #check Valuation
-variable {R S : Type*} {ΓR ΓS : outParam Type*} [Ring R] [Ring S]
+variable {R S : Type*} {ΓR ΓS : outParam Type*} [CommRing R] [CommRing S]
 [LinearOrderedCommGroupWithZero ΓR] [vR : Valued R ΓR][LinearOrderedCommGroupWithZero ΓS] [vS : Valued S ΓS]
+
 
 def RingHom.restrictInteger {f : R →+* S} (hf : vR.v.IsEquiv (vS.v.comap f)) : vR.v.integer →+* vS.v.integer where
   toFun := by
     refine fun ⟨x, hx⟩ ↦ ⟨f x, ?_⟩
     rw [mem_integer_iff, ← comap_apply]
-    sorry
-    -- exact hx
+    exact (Valuation.IsEquiv.le_one_iff_le_one' hf).1 hx
   map_one' := by simp only [_root_.map_one]; rfl
   map_mul' := by simp only [_root_.map_mul, MulMemClass.mk_mul_mk, implies_true]
   map_zero' := by simp only [_root_.map_zero]; rfl

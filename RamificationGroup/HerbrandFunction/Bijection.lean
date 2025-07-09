@@ -5,7 +5,7 @@ open scoped Classical
 open HerbrandFunction DiscreteValuation AlgEquiv Valued
 open DiscreteValuation Subgroup Set Function Finset BigOperators Int Valued
 
-variable (K L : Type*) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [vK : Valued K ℤₘ₀] [Valuation.IsDiscrete vK.v] [vL : Valued L ℤₘ₀] [Valuation.IsDiscrete vL.v] [Algebra K L] [IsValExtension vK.v vL.v] [FiniteDimensional K L] [CompleteSpace K] [Algebra.IsSeparable K L]
+variable (K L : Type*) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [vK : Valued K ℤₘ₀] [Valuation.IsDiscrete vK.v] [vL : Valued L ℤₘ₀] [Valuation.IsDiscrete vL.v] [IsValExtension vK.v vL.v] [CompleteSpace K] [Algebra.IsSeparable K L]
 [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])]
 
 variable (R S : Type*) {ΓR : outParam Type*} [CommRing R] [Ring S] [LinearOrderedCommGroupWithZero ΓR] [vR : Valued R ΓR] [vS : Valued S ℤₘ₀] [Algebra R S]
@@ -17,7 +17,7 @@ theorem aux {n : ℤ} (hn : 1 ≤ n): (∑ x ∈ Finset.Icc 1 (⌈(n : ℚ) + 1�
 
 
 #check Nat.Icc_insert_succ_right
-theorem phi_linear_section_aux {n : ℤ} {x : ℚ} (hx : n ≤ x ∧ x < n + 1) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : phi K L x = phi K L n + (phi K L (n + 1) - phi K L n) * (x - n) := by
+theorem phi_linear_section_aux {n : ℤ} {x : ℚ} (hx : n ≤ x ∧ x < n + 1) : phi K L x = phi K L n + (phi K L (n + 1) - phi K L n) * (x - n) := by
   by_cases hc : 0 < x
   · have hn : (0 : ℚ) ≤ n := by
       by_contra hcon
@@ -34,17 +34,12 @@ theorem phi_linear_section_aux {n : ℤ} {x : ℚ} (hx : n ≤ x ∧ x < n + 1) 
     · rw [phi_eq_sum_card K L hc]
       nth_rw 1 [phi_eq_sum_card K L hc']
       by_cases hc'' : ⌈x⌉ = ⌈(n : ℚ)⌉
-      -- · rw [hc'', mul_add, mul_add, add_assoc]
-      --   congr
       · have hx' : x = n := by
           by_contra hcon
           rw [ceil_intCast] at hc''
           have ceil_lt := hc'' ▸ (lt_of_le_of_ne hx.left (fun eq => hcon eq.symm))
           linarith [Int.le_ceil x]
         simp only [hx', sub_self, mul_zero, add_zero]
-        --rw [phi_eq_sum_card K L, phi_eq_sum_card K L]
-         -- exact hc'
-        -- linarith [hc']
       · have hx' : ⌈x⌉ = ⌈(n : ℚ) + 1⌉ := by
           apply Int.ceil_eq_iff.mpr
           simp
@@ -93,9 +88,6 @@ theorem phi_linear_section_aux {n : ℤ} {x : ℚ} (hx : n ≤ x ∧ x < n + 1) 
             apply_mod_cast hc'
             exact hc'
             linarith [hc']
-            -- conv =>
-            --   enter [2, 1, 1, 1]
-            --   rw [show n = n - 1 + 1 by simp]
     · have hn' : n = 0 := by
         symm
         apply eq_of_le_of_not_lt
@@ -137,7 +129,7 @@ theorem phi_linear_section_aux {n : ℤ} {x : ℚ} (hx : n ≤ x ∧ x < n + 1) 
       have hn' : (n : ℚ) ≤ 0 := by linarith [hn]
       rw [phi_eq_self_of_le_zero K L hn, phi_eq_self_of_le_zero K L hn']; ring
 
-theorem phi_Bijective_section_aux {n : ℤ} {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : ∀ (y : ℚ) , (phi K L n) ≤ y ∧ y < (phi K L (n + 1)) → ∃ (x : ℚ), phi K L x = y := by
+theorem phi_Bijective_section_aux {n : ℤ} : ∀ (y : ℚ) , (phi K L n) ≤ y ∧ y < (phi K L (n + 1)) → ∃ (x : ℚ), phi K L x = y := by
   intro y ⟨hy1, hy2⟩
   use (n + ((y - phi K L n) / (phi K L (n + 1) - phi K L n)))
   have hx : n ≤ (n + ((y - phi K L n) / (phi K L (n + 1) - phi K L n))) ∧ (n + ((y - phi K L n) / (phi K L (n + 1) - phi K L n))) < n + 1 := by
@@ -155,10 +147,8 @@ theorem phi_Bijective_section_aux {n : ℤ} {gen : 𝒪[L]} (hgen : Algebra.adjo
       · simp only [sub_pos]
         apply phi_strictMono
         linarith
-  rw [phi_linear_section_aux K L hx hgen]
+  rw [phi_linear_section_aux K L hx]
   rw [add_comm (n : ℚ) ((y - phi K L n) / (phi K L (n + 1) - phi K L n)), add_sub_assoc, sub_self, add_zero, div_eq_inv_mul, ← mul_assoc, Rat.mul_inv_cancel, one_mul, add_sub_cancel]
-  -- have :  (phi K L (↑n + 1) - phi K L ↑n) * ((y - phi K L ↑n) / (phi K L (↑n + 1) - phi K L ↑n)) = (y - phi K L n) := by
-  --   rw [div_eq_inv_mul, ← mul_assoc, Rat.mul_inv_cancel, one_mul]
   apply sub_ne_zero_of_ne
   apply ne_of_gt
   apply phi_strictMono
@@ -292,7 +282,7 @@ theorem phi_infty_aux (y : ℚ) : ∃ n : ℤ, phi K L n ≤ y ∧ y < phi K L (
   apply phi_strictMono
   linarith
 
-theorem phi_Bijective_aux {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : Function.Bijective (phi K L) := by
+theorem phi_Bijective_aux : Function.Bijective (phi K L) := by
   constructor
   · rintro a1 a2 h
     contrapose! h
@@ -302,4 +292,4 @@ theorem phi_Bijective_aux {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} =
       apply ne_of_lt (phi_strictMono K L (lt_of_le_of_ne h1 h))
   · rintro y
     obtain ⟨n, hn⟩ := phi_infty_aux K L y
-    apply phi_Bijective_section_aux K L (n := n) hgen y hn
+    apply phi_Bijective_section_aux K L (n := n) y hn

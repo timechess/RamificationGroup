@@ -6,6 +6,7 @@ import RamificationGroup.Valued.AlgebraicInstances
 import RamificationGroup.Valuation.Extension
 import RamificationGroup.Valued.Hom.ValExtension
 import RamificationGroup.Valued.AlgebraicInstances
+
 /-
 # Lower Numbering Ramification Group
 
@@ -209,9 +210,9 @@ scoped [Valued] notation:max " i_[" S:max "/" R:max "]" => AlgEquiv.lowerIndex R
 
 
 -- translate the type of lowerIndex from ℕ∞ to ℚ
-noncomputable def AlgEquiv.truncatedLowerIndex (u : ℚ) (s : (S ≃ₐ[R] S)) : ℚ :=
-  if h : i_[S/R] s = ⊤ then u
-  else min u ((i_[S/R] s).untop h)
+  noncomputable def AlgEquiv.truncatedLowerIndex (u : ℚ) (s : (S ≃ₐ[R] S)) : ℚ :=
+    if h : i_[S/R] s = ⊤ then u
+    else min u ((i_[S/R] s).untop h)
 
 scoped [Valued] notation:max " i_[" L:max "/" K:max "]ₜ" => AlgEquiv.truncatedLowerIndex K L
 

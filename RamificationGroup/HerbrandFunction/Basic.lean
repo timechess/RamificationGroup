@@ -17,9 +17,6 @@ theorem Ramification_Group_card_pos {u : ℚ} : 0 < Nat.card G(S/R)_[⌈u⌉] :=
 
 -- by definition of relindex, it's always 1 when u < 0
 noncomputable def phiDeriv (u : ℚ) : ℚ :=
-  --(Nat.card G(S/R)_[(⌈u⌉)] : ℚ) / (Nat.card G(S/R)_[0] : ℚ)
-  --1 / Nat.card (G(S/R)_[0] ⧸ ((G(S/R)_[⌈u⌉]).subgroupOf G(S/R)_[0]))
-  --1 / (relindex G(S/R)_[(⌈u⌉)] G(S/R)_[0])
   (Nat.card G(S/R)_[(max 0 ⌈u⌉)] : ℚ) / (Nat.card G(S/R)_[0] : ℚ)
 
 noncomputable def phi (u : ℚ) : ℚ :=

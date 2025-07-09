@@ -206,7 +206,8 @@ theorem phi_eq_sum_inf_aux (u : ℚ) (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen : Alge
       _ = (1 / Nat.card G(L/K)_[0]) * ((∑ i in Finset.Icc 1 (⌈u⌉ - 1), Nat.card G(L/K)_[i]) + (u - (max 0 (⌈u⌉ - 1))) * (Nat.card G(L/K)_[⌈u⌉])) := by
         apply phi_eq_sum_card K L hc
       _ = (1 / Nat.card G(L/K)_[0]) * ((∑ i in Finset.Icc 0 (⌈u⌉ - 1), Nat.card G(L/K)_[i]) + (u - (max 0 (⌈u⌉ - 1))) * (Nat.card G(L/K)_[⌈u⌉])) - (1 : ℕ) := by
-        have h : 0 < Nat.card G(L/K)_[0] := by rw [← ceil_zero (α := ℤ)]; sorry --apply Ramification_Group_card_pos
+        have h : 0 < Nat.card G(L/K)_[0] := by rw [← ceil_zero (α := ℤ)]
+        apply Ramification_Group_card_pos
         erw [← sum_insert_left_aux 0 (⌈u⌉ - 1) hu' (fun x => Nat.card (lowerRamificationGroup K L x)), ← (Nat.div_self h), Nat.cast_div (by simp) (by simp [h]), ← (mul_one_div ((Nat.card G(L/K)_[0]) : ℚ) ((Nat.card G(L/K)_[0]) : ℚ)), (mul_comm ((Nat.card ↥ G(L/K)_[0]) : ℚ) (1 / ↑(Nat.card ↥ G(L/K)_[0] ))), ← mul_sub, Nat.cast_sub]
         · ring
         · rw [insert_Icc_left 0 (⌈u⌉ - 1) hu', Finset.sum_insert (by simp)]

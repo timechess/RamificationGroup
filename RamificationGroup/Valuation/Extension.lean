@@ -16,8 +16,12 @@ variable [Algebra A B] [IsLocalHom (algebraMap A B)]
 variable [Algebra.IsSeparable (ResidueField A) (ResidueField B)]
 variable [Module.Finite A B]
 
-instance : FiniteDimensional (ResidueField A) (ResidueField B) := by sorry
+instance : FiniteDimensional (ResidueField A) (ResidueField B) := by
   -- apply FiniteDimensional.of_rank_eq_nat
+  -- apply IsLocalRing.ResidueField.finite_of_module_finite
+  -- obtain ⟨n, hn⟩ := IsLocalRing.ResidueField.finite_of_module_finite (R := A) (S := B)
+  sorry
+  -- sorry
   -- apply IsLocalRing.ResidueField.finite_of_module_finite
 
 variable (A) (B) in

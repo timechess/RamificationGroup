@@ -8,7 +8,8 @@ open AlgEquiv AlgHom
 open LocalRing ExtDVR
 open Asymptotics Filter intervalIntegral MeasureTheory Function
 
-variable (K K' L : Type*) {ΓK : outParam Type*} [Field K] [Field K'] [Field L] [vK : Valued K ℤₘ₀] [vK' : Valued K' ℤₘ₀] [vL : Valued L ℤₘ₀] [IsDiscrete vK.v] [IsDiscrete vK'.v] [IsDiscrete vL.v] [Algebra K L] [Algebra K K'] [Algebra K' L] [IsScalarTower K K' L] [IsValExtension vK.v vK'.v] [IsValExtension vK'.v vL.v] [IsValExtension vK.v vL.v] [Normal K K'] [Normal K L] [FiniteDimensional K L] [FiniteDimensional K K'] [FiniteDimensional K' L] [CompleteSpace K] [CompleteSpace K'] [Algebra.IsSeparable K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])]
+variable (K K' L : Type*) {ΓK : outParam Type*} [Field K] [Field K'] [Field L] [vK : Valued K ℤₘ₀] [vK' : Valued K' ℤₘ₀] [vL : Valued L ℤₘ₀] [IsDiscrete vK.v] [IsDiscrete vK'.v] [IsDiscrete vL.v] [Algebra K L] [Algebra K K'] [Algebra K' L] [IsScalarTower K K' L] [IsValExtension vK.v vK'.v] [IsValExtension vK'.v vL.v] [IsValExtension vK.v vL.v] [Normal K K'] [Normal K L] [FiniteDimensional K L] [FiniteDimensional K K'] [FiniteDimensional K' L] [CompleteSpace K] [CompleteSpace K'] [Algebra.IsSeparable K L
+] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])]
 
 local notation:max " G(" L:max "/" K:max ")^[" v:max "] " => upperRamificationGroup_aux K L v
 
@@ -62,12 +63,11 @@ theorem phiDerivReal'_eq_phiDerivReal_of {u : ℝ} (h : u ≠ ⌈u⌉) (h' : 0 <
 
 variable [IsScalarTower 𝒪[K] 𝒪[K'] 𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K L] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]]
 
-theorem phiDerivReal'_comp_zero {gen : ↥𝒪[L]}
-  (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) {gen' : ↥𝒪[L]} (hgen' : Algebra.adjoin ↥𝒪[K'] {gen'} = ⊤) {gen'' : ↥𝒪[K']} (hgen'' : Algebra.adjoin ↥𝒪[K] {gen''} = ⊤) : (phiDerivReal' K' L 0) * (phiDerivReal' K K' (phiReal K' L 0)) = phiDerivReal' K L 0 := by
+theorem phiDerivReal'_comp_zero : (phiDerivReal' K' L 0) * (phiDerivReal' K K' (phiReal K' L 0)) = phiDerivReal' K L 0 := by
   unfold phiDerivReal'
   simp only [phiReal_zero_eq_zero, Int.floor_zero, zero_add, ← mul_div_mul_comm]
   congr
-  rw [← Int.ceil_one (α := ℝ), ← RamificationGroup_card_comp_aux K K' L (by linarith) hgen hgen', mul_comm, mul_eq_mul_right_iff]
+  rw [← Int.ceil_one (α := ℝ), ← RamificationGroup_card_comp_aux K K' L (by linarith), mul_comm, mul_eq_mul_right_iff]
   left
   have hp : ⌈phiReal K' L 1⌉ = 1 := by
     apply Int.ceil_eq_iff.2
@@ -76,12 +76,12 @@ theorem phiDerivReal'_comp_zero {gen : ↥𝒪[L]}
     · rw [← phiReal_zero_eq_zero K' L]
       apply phiReal_StrictMono K' L (by linarith)
     · apply phiReal_one_le_one K' L
-  rw [Nat.cast_inj, Nat.card_congr, herbrand_Real K K' L 1 (by linarith) hgen'' hgen hgen', hp]
+  rw [Nat.cast_inj, Nat.card_congr, herbrand_Real K K' L 1 (by linarith), hp]
   simp only [Int.ceil_one]
   exact Equiv.setCongr rfl
   rw[mul_comm, RamificationGroup_card_zero_comp_aux K K' L]
 
-theorem phiDerivReal'_comp {u : ℝ} (h : 0 < u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) {gen'' : 𝒪[K']} (hgen'' : Algebra.adjoin 𝒪[K] {gen''} = ⊤) {gen''' : 𝒪[L]} (hgen''' : Algebra.adjoin 𝒪[K] {gen'''} = ⊤) : (phiDerivReal' K' L u) * phiDerivReal' K K' (phiReal K' L u) = phiDerivReal' K L u := by
+theorem phiDerivReal'_comp {u : ℝ} (h : 0 < u) : (phiDerivReal' K' L u) * phiDerivReal' K K' (phiReal K' L u) = phiDerivReal' K L u := by
   have h' : ∃ v : ℝ, ⌈v⌉ = ⌊u⌋ + 1 ∧ ⌈phiReal K' L v⌉ = ⌊phiReal K' L u⌋ + 1 := by
     have h'' : ∃ v : ℝ, v ∈ Set.Ioc u (⌊u⌋ + 1) ∧ v ∈ Set.Ioc u (u + ⌊phiReal K' L u⌋ + 1 - phiReal K' L u) := by
       simp only [← Set.mem_inter_iff, ← Set.nonempty_def, Set.Ioc_inter_Ioc, le_refl, sup_of_le_left, Set.nonempty_Ioc, lt_inf_iff, Int.lt_floor_add_one, true_and, add_assoc, add_sub_assoc, lt_add_iff_pos_right]
@@ -119,7 +119,7 @@ theorem phiDerivReal'_comp {u : ℝ} (h : 0 < u) {gen : 𝒪[L]} (hgen : Algebra
     rw [← Int.ceil_pos, hv1]
     have : 0 ≤ ⌊u⌋ := Int.floor_nonneg.mpr (le_of_lt h)
     linarith
-  obtain hcm := phiDerivReal_comp K K' L hv hgen hgen' hgen'' hgen'''
+  obtain hcm := phiDerivReal_comp K K' L hv
   unfold phiDerivReal at hcm
   rw [max_eq_right, max_eq_right] at hcm
   unfold phiDerivReal'
@@ -330,7 +330,7 @@ theorem phiReal_HasDerivWithinAt {u : ℝ} (h : 0 ≤ u) : HasDerivWithinAt (phi
 
 
 #check phiDerivReal'_comp
-theorem phiReal_comp_HasDerivWithinAt {u : ℝ} (h : 0 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) {gen'' : 𝒪[K']} (hgen'' : Algebra.adjoin 𝒪[K] {gen''} = ⊤) {gen''' : 𝒪[L]} (hgen''' : Algebra.adjoin 𝒪[K] {gen'''} = ⊤) : HasDerivWithinAt (phiReal K K' ∘ phiReal K' L) (phiDerivReal' K L u) (Set.Ici u) u := by
+theorem phiReal_comp_HasDerivWithinAt {u : ℝ} (h : 0 ≤ u) : HasDerivWithinAt (phiReal K K' ∘ phiReal K' L) (phiDerivReal' K L u) (Set.Ici u) u := by
   apply HasDerivWithinAt.congr_deriv (f' := phiDerivReal' K' L u * phiDerivReal' K K' (phiReal K' L u))
   apply HasDerivWithinAt.scomp (t' := Set.Ici (phiReal K' L u))
   apply phiReal_HasDerivWithinAt
@@ -339,9 +339,9 @@ theorem phiReal_comp_HasDerivWithinAt {u : ℝ} (h : 0 ≤ u) {gen : 𝒪[L]} (h
   apply phiReal_HasDerivWithinAt K' L h
   apply Monotone.mapsTo_Ici (phiReal_StrictMono K' L).monotone
   by_cases hu : 0 < u
-  · rw [← phiDerivReal'_comp K K' L hu hgen hgen' hgen'' hgen''']
+  · rw [← phiDerivReal'_comp K K' L hu]
   · have hu' : u = 0 := Eq.symm (eq_of_le_of_not_lt h hu)
-    rw [hu', phiDerivReal'_comp_zero K K' L hgen hgen' hgen'']
+    rw [hu', phiDerivReal'_comp_zero K K' L]
 
 theorem phiReal_continuousOn_section {n : ℕ} : ContinuousOn (phiReal K L) (Set.Icc (n : ℝ) (n + 1 : ℝ)) := by
   let g : ℝ → ℝ := fun x => phiReal K L n + (1 / Nat.card G(L/K)_[0] : ℝ) * (Nat.card G(L/K)_[(n + 1)]) * (x - n)
@@ -422,13 +422,12 @@ theorem phiReal_comp_continuousOn_section {n : ℕ} : ContinuousOn (phiReal K K'
   apply phiReal_continuousOn_section
 
 
-theorem phiReal_comp_of_isVal_Extension_pos_aux {n : ℕ} {gen : ↥𝒪[L]} (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) {gen' : ↥𝒪[L]} (hgen' : Algebra.adjoin ↥𝒪[K'] {gen'} = ⊤) {gen'' : ↥𝒪[K']} (hgen'' : Algebra.adjoin ↥𝒪[K] {gen''} = ⊤)
-  {gen''' : ↥𝒪[L]} (hgen''' : Algebra.adjoin ↥𝒪[K] {gen'''} = ⊤) : ∀ u ∈ Set.Icc (n : ℝ) (n + 1 : ℝ), ((phiReal K K') ∘ (phiReal K' L)) u = phiReal K L u := by
+theorem phiReal_comp_of_isVal_Extension_pos_aux {n : ℕ} : ∀ u ∈ Set.Icc (n : ℝ) (n + 1 : ℝ), ((phiReal K K') ∘ (phiReal K' L)) u = phiReal K L u := by
   induction' n with n hn
   · intro u hu
     apply eq_of_has_deriv_right_eq (a := (0 : ℝ)) (b := (1 : ℝ)) (f' := phiDerivReal' K L)
     · intro x hx
-      apply phiReal_comp_HasDerivWithinAt K K' L (Set.mem_Ico.1 hx).1 hgen hgen' hgen'' hgen'''
+      apply phiReal_comp_HasDerivWithinAt K K' L (Set.mem_Ico.1 hx).1
     · intro x hx
       apply phiReal_HasDerivWithinAt K L (Set.mem_Ico.1 hx).1
     · convert phiReal_comp_continuousOn_section K K' L (n := 0)
@@ -443,7 +442,7 @@ theorem phiReal_comp_of_isVal_Extension_pos_aux {n : ℕ} {gen : ↥𝒪[L]} (hg
   · intro u hu
     apply eq_of_has_deriv_right_eq (a := (n + 1 : ℝ)) (b := (n + 2 : ℝ)) (f' := phiDerivReal' K L)
     · intro x hx
-      apply phiReal_comp_HasDerivWithinAt K K' L (le_trans _ (Set.mem_Ico.1 hx).1) hgen hgen' hgen'' hgen'''
+      apply phiReal_comp_HasDerivWithinAt K K' L (le_trans _ (Set.mem_Ico.1 hx).1)
       apply le_trans (Nat.cast_nonneg' n) (by linarith)
     · intro x hx
       apply phiReal_HasDerivWithinAt K L (le_trans _ (Set.mem_Ico.1 hx).1)
@@ -457,12 +456,31 @@ theorem phiReal_comp_of_isVal_Extension_pos_aux {n : ℕ} {gen : ↥𝒪[L]} (hg
     · simp only [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] at hu
       exact hu
 
+theorem phiReal_comp_of_isValExtension (u : ℝ) : (phiReal K K') ((phiReal K' L) u) = (phiReal K L) u := by
+  by_cases hu : u ≤ 0
+  · rw [phiReal_eq_self_of_le_zero K L hu, phiReal_eq_self_of_le_zero K' L hu, phiReal_eq_self_of_le_zero K K' hu]
+  · rw [← Function.comp_apply (f := phiReal K K') (g := phiReal K' L), phiReal_comp_of_isVal_Extension_pos_aux K K' L u (n := ⌊u⌋.toNat)]
+    apply Set.mem_Icc.2
+    push_neg at hu
+    constructor
+    · rw [← Int.cast_natCast, Int.toNat_of_nonneg]
+      exact Int.floor_le u
+      apply Int.le_floor.mpr
+      simp only [Int.cast_zero]
+      exact le_of_lt hu
+    · rw [← Int.cast_natCast, Int.toNat_of_nonneg]
+      apply le_of_lt
+      apply Int.lt_floor_add_one
+      apply Int.le_floor.mpr
+      simp only [Int.cast_zero]
+      exact le_of_lt hu
+
 @[simp]
-theorem phi_comp_of_isValExtension' (u : ℚ) {gen : ↥𝒪[L]} (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) {gen' : ↥𝒪[L]} (hgen' : Algebra.adjoin ↥𝒪[K'] {gen'} = ⊤) {gen'' : ↥𝒪[K']} (hgen'' : Algebra.adjoin ↥𝒪[K] {gen''} = ⊤) {gen''' : ↥𝒪[L]} (hgen''' : Algebra.adjoin ↥𝒪[K] {gen'''} = ⊤) : (phi K K') ((phi K' L) u) = (phi K L) u := by
+theorem phi_comp_of_isValExtension' (u : ℚ) : (phi K K') ((phi K' L) u) = (phi K L) u := by
   by_cases hu : 0 ≤ u
   · simp only [← Rat.cast_inj (α := ℝ)]
     rw [← phiReal_eq_phi K L hu, ← phiReal_eq_phi K K', ← phiReal_eq_phi K' L hu]
-    apply phiReal_comp_of_isVal_Extension_pos_aux K K' L hgen hgen' hgen'' hgen''' (n := ⌊u⌋.toNat)
+    apply phiReal_comp_of_isVal_Extension_pos_aux K K' L (n := ⌊u⌋.toNat)
     simp only [Set.mem_Icc, Rat.natCast_le_cast]
     have hu':= Int.floor_nonneg.2 hu
     constructor <;> rw [← Int.cast_natCast, Int.toNat_of_nonneg hu']
@@ -483,32 +501,32 @@ theorem phi_comp_of_isValExtension' (u : ℚ) {gen : ↥𝒪[L]} (hgen : Algebra
 theorem phi_comp_of_isValExtension : (phi K K') ∘ (phi K' L) = phi K L := by
   ext u
   apply phi_comp_of_isValExtension'
-  repeat sorry
 
 instance : Finite (L ≃ₐ[K'] L) := Finite.algEquiv
 
 @[simp]
-theorem psi_comp_of_isValExtension {gen : ↥𝒪[L]}
-  (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) {gen' : ↥𝒪[K']} (hgen' : Algebra.adjoin ↥𝒪[K] {gen'} = ⊤) {gen'' : ↥𝒪[L]} (hgen'' : Algebra.adjoin ↥𝒪[K'] {gen''} = ⊤) : (psi K' L) ∘ (psi K K') = psi K L := by
+theorem psi_comp_of_isValExtension : (psi K' L) ∘ (psi K K') = psi K L := by
   unfold psi
   have hcomp : invFun (phi K' L) ∘ invFun (phi K K') ∘ (phi K K') ∘ (phi K' L) = invFun (phi K L) ∘ (phi K K') ∘ (phi K' L) := by
     nth_rw 2 [phi_comp_of_isValExtension]
-    rw [invFun_comp (phi_Bijective_aux K L hgen).injective, ← comp.assoc (invFun (phi K K')) (phi K K') (phi K' L), invFun_comp (phi_Bijective_aux K K' hgen').injective, id_comp, invFun_comp (phi_Bijective_aux K' L hgen'').injective]
-  simp [Function.comp_left_cancel (phi_Bijective_aux K' L hgen'')] at hcomp
-  apply Function.comp_left_cancel (phi_Bijective_aux K L hgen) hcomp
+    rw [invFun_comp (phi_Bijective_aux K L).injective, ← comp.assoc (invFun (phi K K')) (phi K K') (phi K' L), invFun_comp (phi_Bijective_aux K K').injective, id_comp, invFun_comp (phi_Bijective_aux K' L).injective]
+  simp [Function.comp_left_cancel (phi_Bijective_aux K' L)] at hcomp
+  apply Function.comp_left_cancel (phi_Bijective_aux K L) hcomp
 
 @[simp]
-theorem psi_comp_of_isValExtension' (v : ℚ) {gen : ↥𝒪[L]}
-  (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) {gen' : ↥𝒪[K']} (hgen' : Algebra.adjoin ↥𝒪[K] {gen'} = ⊤) {gen'' : ↥𝒪[L]} (hgen'' : Algebra.adjoin ↥𝒪[K'] {gen''} = ⊤)  : (psi K' L) ((psi K K') v) = psi K L v := by
-  rw [← psi_comp_of_isValExtension (K := K) (K' := K') (L := L) hgen hgen' hgen'']
+theorem psi_comp_of_isValExtension' (v : ℚ) : (psi K' L) ((psi K K') v) = psi K L v := by
+  rw [← psi_comp_of_isValExtension (K := K) (K' := K') (L := L)]
   simp
 
+
 @[simp]
-theorem herbrand' (v : ℚ) {gen : 𝒪[K']} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K] {gen'} = ⊤) {gen'' : ↥𝒪[L]} (hgen'' : Algebra.adjoin ↥𝒪[K'] {gen''} = ⊤) : G(L/K)^[v].map (AlgEquiv.restrictNormalHom K') = G(K'/K)^[v] := by
+theorem herbrand' (v : ℚ) : G(L/K)^[v].map (AlgEquiv.restrictNormalHom K') = G(K'/K)^[v] := by
   calc
     _ = G(L/K)_[⌈psi K L v⌉].map (AlgEquiv.restrictNormalHom K') := rfl
-    _ = G(K'/K)_[⌈phi K' L (psi K L v)⌉] := herbrand _ hgen hgen'
+    _ = G(K'/K)_[⌈phi K' L (psi K L v)⌉] := herbrand _
     _ = G(K'/K)^[v] := by
-      rw [← psi_comp_of_isValExtension (K := K) (K' := K') (L := L) hgen' hgen hgen'']
-      simp only [Function.comp_apply, phi_psi_eq_self K' L (psi K K' v) hgen'']
+      rw [← psi_comp_of_isValExtension (K := K) (K' := K') (L := L)]
+      simp only [Function.comp_apply, phi_psi_eq_self K' L (psi K K' v)]
       rfl
+
+#check AlgEquiv

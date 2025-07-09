@@ -7,6 +7,7 @@ import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import RamificationGroup.HerbrandFunction.Psi
 import RamificationGroup.ForMathlib.AlgEquiv.Basic
 import RamificationGroup.ForMathlib.Unknow
+import RamificationGroup.KroneckerWeber.IsInvariant
 -- import RamificationGroup.Valued.Hom.Discrete'
 
 /-!
@@ -93,6 +94,7 @@ theorem FuncJ_refl (h : σ = .refl) : FuncJ L σ = ⊤ := by
     · rw [lowerIndex_refl]
 
 omit vK' [vK'.v.IsDiscrete] [IsValExtension vK'.v vL.v] [FiniteDimensional K K'] [FiniteDimensional K' L] in
+omit [CompleteSpace K] [IsValExtension vK.v vL.v] in
 theorem exist_truncatedLowerIndex_eq_truncatedJ (u : ℚ) (σ : K' ≃ₐ[K] K') : ∃ s : L ≃ₐ[K] L, s ∈ (AlgEquiv.restrictNormalHom K')⁻¹' {σ} ∧  AlgEquiv.truncatedLowerIndex K L u s - 1 = HerbrandFunction.truncatedJ L u σ := by
   have hnem : ((AlgEquiv.restrictNormalHom K' (K₁ := L))⁻¹' {σ}).Nonempty := by
     have h1 : Set.SurjOn (AlgEquiv.restrictNormalHom K' (K₁ := L)) ((AlgEquiv.restrictNormalHom K' (K₁ := L))⁻¹' {σ}) {σ} := by
@@ -363,15 +365,17 @@ theorem sum_preimage_eq_sum_subgroup (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (
   · intro i hi
     rfl
 
-variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem prop3_aux (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ ((restrictNormalHom K')⁻¹' {σ})) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[K']) : (LocalField.ramificationIdx K' L) * (lowerIndex K K' σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig) = (∑ x : (L ≃ₐ[K'] L), (i_[L/K] ((restrictScalarsHom K x) * s)).untop (preimage_untop σ hsig h1)) := by
+variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
+theorem prop3_aux (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ ((restrictNormalHom K')⁻¹' {σ})) : (LocalField.ramificationIdx K' L) * (lowerIndex K K' σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig) = (∑ x : (L ≃ₐ[K'] L), (i_[L/K] ((restrictScalarsHom K x) * s)).untop (preimage_untop σ hsig h1)) := by
+  let x := PowerBasisValExtension K L
+  let y := PowerBasisValExtension K K'
   calc
     _ = ((LocalField.ramificationIdx K' L) * (lowerIndex K K' σ)).untop ?_ := by
       rw [← WithTop.coe_eq_coe, WithTop.coe_mul, WithTop.coe_untop, WithTop.coe_untop]
       rfl
       apply ne_of_lt (WithTop.mul_lt_top _ _)
     _ = (∑ x : ((restrictNormalHom K' (K₁ := L))⁻¹' {σ}), i_[L/K] x).untop ?_:= by
-      rw [← WithTop.coe_eq_coe, WithTop.coe_untop, WithTop.coe_untop, ← prop3 (K := K) (M := K') (L := L) σ x y]
+      rw [← WithTop.coe_eq_coe, WithTop.coe_untop, WithTop.coe_untop, ← prop3 (K := K) (M := K') (L := L) σ]
       exact Eq.symm (Finset.sum_set_coe (⇑(restrictNormalHom K') ⁻¹' {σ}))
       exact Batteries.compareOfLessAndEq_eq_lt.mp rfl
       apply WithTop.lt_top_iff_ne_top.2 (lowerIndex_ne_one (mem_decompositionGroup σ) hsig)
@@ -498,20 +502,25 @@ theorem lowerIndex_eq_inf (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ 
       push_neg at hc
       apply le_of_lt hc
 
+
+set_option maxHeartbeats 0
+#check Algebra.IsInvariant.card_inertia
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
+  -- rw [← Algebra.IsInvariant.card_inertia (L ≃ₐ[K'] L) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
   sorry
 
 set_option maxHeartbeats 0
-variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem lowerIndex_eq_phi_FuncJ_of_ne_refl (hsig : σ ≠ .refl) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[K']) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : (lowerIndex K K' σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig) = phi K' L ((FuncJ L σ).untop ((FuncJ_untop_of_nerefl σ hsig)) - 1) + 1 := by
+variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
+theorem lowerIndex_eq_phi_FuncJ_of_ne_refl (hsig : σ ≠ .refl) : (lowerIndex K K' σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig) = phi K' L ((FuncJ L σ).untop ((FuncJ_untop_of_nerefl σ hsig)) - 1) + 1 := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   obtain ⟨s, hs1, hs2⟩ := preimage_lowerIndex_eq_FuncJ (K' := K') (L := L) σ hsig
   suffices h : (LocalField.ramificationIdx K' L) * (lowerIndex K K' σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig) = (LocalField.ramificationIdx K' L) * (phi K' L ((FuncJ L σ).untop (FuncJ_untop_of_nerefl σ hsig) - 1) + 1) from by
     apply mul_left_cancel₀ at h
     exact h
     norm_cast
     apply ramificationIdx_ne_zero
-  rw [← Nat.cast_mul, prop3_aux (K := K) (K' := K') (L := L) σ hsig hs1 x y, phi_eq_sum_inf_aux K' L (hgen := hgen'), RamificationIdx_eq_card_of_inertia_group, sub_add_cancel, ← mul_assoc, mul_one_div_cancel, one_mul, Nat.cast_sum]
+  rw [← Nat.cast_mul, prop3_aux (K := K) (K' := K') (L := L) σ hsig hs1, phi_eq_sum_inf_aux K' L, RamificationIdx_eq_card_of_inertia_group, sub_add_cancel, ← mul_assoc, mul_one_div_cancel, one_mul, Nat.cast_sum]
   apply Finset.sum_congr rfl
   intro x hx
   simp only [sub_add_cancel]
@@ -521,8 +530,8 @@ theorem lowerIndex_eq_phi_FuncJ_of_ne_refl (hsig : σ ≠ .refl) (x : PowerBasis
   simp only [neg_le_sub_iff_le_add, le_add_iff_nonneg_left, Nat.cast_nonneg]
 
 variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] in
-variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem truncatedJ_eq_trunc_iff_lowerIdx_le_phi {u : ℚ} (hsig : σ ≠ .refl) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[K']) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : min (phi K' L u + 1) ((i_[K'/K] σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig)) = phi K' L u + 1 ↔ truncatedJ L (u + 1) σ = u := by
+variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
+theorem truncatedJ_eq_trunc_iff_lowerIdx_le_phi {u : ℚ} (hsig : σ ≠ .refl) : min (phi K' L u + 1) ((i_[K'/K] σ).untop (lowerIndex_ne_one (mem_decompositionGroup σ) hsig)) = phi K' L u + 1 ↔ truncatedJ L (u + 1) σ = u := by
   constructor
   · intro hu
     simp only [truncatedJ_eq_truncated_FuncJ, (FuncJ_untop_of_nerefl σ hsig), ↓reduceDIte]
@@ -530,19 +539,21 @@ theorem truncatedJ_eq_trunc_iff_lowerIdx_le_phi {u : ℚ} (hsig : σ ≠ .refl) 
     simp only [add_sub_cancel_right]
     suffices h : phi K' L u ≤ phi K' L ((FuncJ L σ).untop (FuncJ_untop_of_nerefl σ hsig) - 1) from by
       linarith [(StrictMono.le_iff_le (phi_strictMono K' L)).1 h]
-    rw [← add_le_add_iff_right (a := 1), ← lowerIndex_eq_phi_FuncJ_of_ne_refl σ hsig x y hgen hgen', ← hu]
+    rw [← add_le_add_iff_right (a := 1), ← lowerIndex_eq_phi_FuncJ_of_ne_refl σ hsig, ← hu]
     apply min_le_right
   · intro hu
     rw [min_eq_left]
     simp only [truncatedJ_eq_truncated_FuncJ, (FuncJ_untop_of_nerefl σ hsig), ↓reduceDIte] at hu
-    rw [lowerIndex_eq_phi_FuncJ_of_ne_refl (L := L) σ hsig x y hgen hgen', add_le_add_iff_right]
+    rw [lowerIndex_eq_phi_FuncJ_of_ne_refl (L := L) σ hsig, add_le_add_iff_right]
     apply (phi_strictMono K' L).monotone
     rw [← hu]
     simp only [tsub_le_iff_right, sub_add_cancel, min_le_iff, le_refl, true_or]
 
 
-variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem lemma3_aux' (u : ℚ) (h' : 0 ≤ u) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[K']) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : σ.truncatedLowerIndex K K' (phi K' L u + 1) = (1 / LocalField.ramificationIdx K' L) * (∑ s in (⊤ : Finset (L ≃ₐ[K'] L)), (AlgEquiv.truncatedLowerIndex K L (truncatedJ L (u + 1) σ + 1) (AlgEquiv.restrictScalars K s))) := by
+variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
+theorem lemma3_aux' (u : ℚ) (h' : -1 ≤ u) : σ.truncatedLowerIndex K K' (phi K' L u + 1) = (1 / LocalField.ramificationIdx K' L) * (∑ s in (⊤ : Finset (L ≃ₐ[K'] L)), (AlgEquiv.truncatedLowerIndex K L (truncatedJ L (u + 1) σ + 1) (AlgEquiv.restrictScalars K s))) := by
+  let x := PowerBasisValExtension K L
+  let y := PowerBasisValExtension K K'
   by_cases hsig : σ = .refl
   · conv =>
       left
@@ -550,7 +561,7 @@ theorem lemma3_aux' (u : ℚ) (h' : 0 ≤ u) (x : PowerBasis 𝒪[K] 𝒪[L]) (y
     conv =>
       right
       simp only [hsig, truncatedJ_refl]
-    rw [phi_eq_sum_inf_aux K' L (by linarith) hgen', RamificationIdx_eq_card_of_inertia_group]
+    rw [phi_eq_sum_inf_aux K' L (by linarith), RamificationIdx_eq_card_of_inertia_group]
     simp only [sub_add_cancel, truncatedLowerIndex_restrictScalars]
   · have h : ¬ lowerIndex K K' σ = ⊤ := by
       apply lowerIndex_ne_one ?_ hsig
@@ -565,8 +576,8 @@ theorem lemma3_aux' (u : ℚ) (h' : 0 ≤ u) (x : PowerBasis 𝒪[K] 𝒪[L]) (y
     rw [hunion, Finset.sum_union, hrefl]
     by_cases hu : min (phi K' L u + 1) ↑(WithTop.untop ( i_[K'/K] σ) h) = phi K' L u + 1
     · have hu' : truncatedJ L (u + 1) σ = u := by
-        apply (truncatedJ_eq_trunc_iff_lowerIdx_le_phi (K := K) (K' := K') (L := L) σ hsig x y hgen hgen').1 hu
-      rw [hu, hu', phi_eq_sum_inf_aux K' L (by linarith) hgen', RamificationIdx_eq_card_of_inertia_group]
+        apply (truncatedJ_eq_trunc_iff_lowerIdx_le_phi (K := K) (K' := K') (L := L) σ hsig).1 hu
+      rw [hu, hu', phi_eq_sum_inf_aux K' L (by linarith), RamificationIdx_eq_card_of_inertia_group]
       simp only [one_div, Finset.top_eq_univ, sub_add_cancel, truncatedLowerIndex_restrictScalars, Finset.subset_univ, Finset.sum_sdiff_eq_sub, Finset.sum_singleton, truncatedLowerIndex_refl]
     · have hu' : truncatedJ L (u + 1) σ = ((WithTop.untop (FuncJ L σ) (FuncJ_untop_of_nerefl σ hsig))) - 1 := by
         suffices h : ¬ truncatedJ L (u + 1) σ = u from by
@@ -579,35 +590,41 @@ theorem lemma3_aux' (u : ℚ) (h' : 0 ≤ u) (x : PowerBasis 𝒪[K] 𝒪[L]) (y
           apply min_eq_right (le_of_lt hc)
         by_contra hc
         absurd hu
-        apply (truncatedJ_eq_trunc_iff_lowerIdx_le_phi (K := K) (K' := K') (L := L) σ hsig x y hgen hgen').2 hc
+        apply (truncatedJ_eq_trunc_iff_lowerIdx_le_phi (K := K) (K' := K') (L := L) σ hsig).2 hc
       simp only [Classical.or_iff_not_imp_left.1 (min_choice (phi K' L u + 1) (↑(WithTop.untop ( i_[K'/K] σ) h))) hu, hu']
-      rw [lowerIndex_eq_phi_FuncJ_of_ne_refl (L := L) σ hsig x y hgen hgen', phi_eq_sum_inf_aux K' L _ hgen', RamificationIdx_eq_card_of_inertia_group, sub_add_cancel]
+      rw [lowerIndex_eq_phi_FuncJ_of_ne_refl (L := L) σ hsig, phi_eq_sum_inf_aux K' L _, RamificationIdx_eq_card_of_inertia_group, sub_add_cancel]
       simp only [one_div, Finset.top_eq_univ, truncatedLowerIndex_restrictScalars, Finset.subset_univ, Finset.sum_sdiff_eq_sub, Finset.sum_singleton, truncatedLowerIndex_refl, sub_add_cancel]
       simp only [neg_le_sub_iff_le_add, le_add_iff_nonneg_left, Nat.cast_nonneg]
     exact Finset.sdiff_disjoint
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])]
 
-theorem phi_truncatedJ_sub_one (u : ℚ) (hu : 0 ≤ u) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[K']) (σ : K' ≃ₐ[K] K') {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen} = ⊤) : phi K' L (truncatedJ L (u + 1) σ) + 1 = σ.truncatedLowerIndex K K' ((phi K' L u) + 1) := by
+theorem phi_truncatedJ_sub_one (u : ℚ) (hu : -1 ≤ u) (σ : K' ≃ₐ[K] K') : phi K' L (truncatedJ L (u + 1) σ) + 1 = σ.truncatedLowerIndex K K' ((phi K' L u) + 1) := by
   calc
   _ = (1 / Nat.card G(L/K')_[0]) * ((Finset.sum (⊤ : Finset (L ≃ₐ[K'] L)) (AlgEquiv.truncatedLowerIndex K' L (truncatedJ L (u + 1) σ + 1) ·))) := by
-    rw [phi_eq_sum_inf_aux K' L _ hgen']
+    rw [phi_eq_sum_inf_aux K' L _]
     simp
-    unfold truncatedJ
-    apply Finset.le_max'
-    simp only [Finset.mem_image, Set.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff, sub_eq_neg_self]
-    repeat sorry
+    obtain ⟨s, s_in, hs⟩ := exist_truncatedLowerIndex_eq_truncatedJ (L := L) (u + 1) σ
+    rw [← hs]
+    simp only [neg_le_sub_iff_le_add, le_add_iff_nonneg_left]
+    unfold truncatedLowerIndex
+    by_cases h : i_[L/K] s = ⊤
+    · simp only [h, ↓reduceDIte]
+      linarith
+    · simp only [h, ↓reduceDIte, le_inf_iff, Nat.cast_nonneg, and_true]
+      linarith
   _ = (1 / LocalField.ramificationIdx K' L) * ((Finset.sum (⊤ : Finset (L ≃ₐ[K'] L)) (AlgEquiv.truncatedLowerIndex K' L (truncatedJ L (u + 1) σ + 1) ·))) := by
     congr
     apply RamificationIdx_eq_card_of_inertia_group
   _ = (1 / LocalField.ramificationIdx K' L) * ((∑ x in (⊤ : Finset (L ≃ₐ[K'] L)), (AlgEquiv.truncatedLowerIndex K L (truncatedJ L (u + 1) σ + 1) (AlgEquiv.restrictScalars K x)))) := by
     congr
   _ = σ.truncatedLowerIndex K K' ((phi K' L u) + 1) := by
-    rw [lemma3_aux' σ u hu x y hgen hgen']
+    rw [lemma3_aux' σ u hu]
 
-
-theorem mem_lowerRamificationGroup_of_le_truncatedJ_sub_one {u r : ℚ} (h : u ≤ truncatedJ L r σ) {gen : ↥𝒪[L]} (hgen : Algebra.adjoin ↥𝒪[K] {gen} = ⊤) : σ ∈ (G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K')) := by
+omit vK' [vK'.v.IsDiscrete] [IsValExtension vK'.v vL.v] [FiniteDimensional K K'] [FiniteDimensional K' L] [IsValExtension vK.v vK'.v] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K' L] [CompleteSpace K'] [Algebra.IsSeparable K K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] in
+theorem mem_lowerRamificationGroup_of_le_truncatedJ_sub_one {u r : ℚ} (h : u ≤ truncatedJ L r σ) : σ ∈ (G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K')) := by
   simp only [Subgroup.mem_map]
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   obtain ⟨s, s_in, hs⟩ := exist_truncatedLowerIndex_eq_truncatedJ (L := L) r σ
   simp at s_in
   have hs : s ∈ G(L/K)_[⌈u⌉] := by
@@ -618,10 +635,22 @@ theorem mem_lowerRamificationGroup_of_le_truncatedJ_sub_one {u r : ℚ} (h : u �
     apply Subgroup.mem_top
   use s
 
-theorem le_truncatedJ_sub_one_iff_mem_lowerRamificationGroup {u : ℚ} {r : ℚ} (h : u + 1 ≤ r) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : u ≤ truncatedJ L r σ ↔ σ ∈ (G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K')) := by
+omit vK' [vK'.v.IsDiscrete] [IsValExtension vK'.v
+  vL.v] [FiniteDimensional K
+  K'] [FiniteDimensional K'
+  L] [IsValExtension vK.v
+  vK'.v] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K'])
+  (IsLocalRing.ResidueField
+    ↥𝒪[L])] [Algebra.IsSeparable K'
+  L] [CompleteSpace
+  K'] [Algebra.IsSeparable K
+  K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K])
+  (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] in
+theorem le_truncatedJ_sub_one_iff_mem_lowerRamificationGroup {u : ℚ} {r : ℚ} (h : u + 1 ≤ r) : u ≤ truncatedJ L r σ ↔ σ ∈ (G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K')) := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   constructor
   · intro hu
-    apply mem_lowerRamificationGroup_of_le_truncatedJ_sub_one _ hu hgen
+    apply mem_lowerRamificationGroup_of_le_truncatedJ_sub_one _ hu
   · rintro hx
     obtain ⟨s, s_in, hs⟩ := exist_truncatedLowerIndex_eq_truncatedJ (L := L) r σ
     simp at s_in
@@ -649,15 +678,24 @@ theorem le_truncatedJ_sub_one_iff_mem_lowerRamificationGroup {u : ℚ} {r : ℚ}
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K L] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [CompleteSpace K] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
 @[simp]
-theorem herbrand (u : ℚ) {gen : 𝒪[K']} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K] {gen'} = ⊤) : G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K') = G(K'/K)_[⌈phi K' L u⌉] := by
+theorem herbrand (u : ℚ) : G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K') = G(K'/K)_[⌈phi K' L u⌉] := by
+  by_cases hu : u < -1
+  · rw [phi_eq_self_of_le_zero K' L (by linarith)]
+    rw [lowerRamificationGroup_eq_top, lowerRamificationGroup_eq_top]
+    exact Subgroup.map_top_of_surjective (restrictNormalHom K') (restrictNormalHom_surjective L)
+    apply Int.ceil_le.2
+    apply_mod_cast le_of_lt hu
+    apply Int.ceil_le.2
+    apply_mod_cast le_of_lt hu
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := K')
   ext σ
   calc
   _ ↔ truncatedJ L (u + 1) σ ≥ u :=
-    (le_truncatedJ_sub_one_iff_mem_lowerRamificationGroup σ (by linarith) hgen').symm
+    (le_truncatedJ_sub_one_iff_mem_lowerRamificationGroup σ (by linarith)).symm
   _ ↔ phi K' L (truncatedJ L (u + 1) σ) ≥ phi K' L u := (phi_strictMono K' L).le_iff_le.symm
   _ ↔ σ.truncatedLowerIndex K K' (phi K' L u + 1) - 1 ≥ phi K' L u := by
-    have heq : phi K' L (truncatedJ L (u + 1) σ) + 1 = i_[K'/K]ₜ (phi K' L u + 1) σ := by sorry
-      -- simp only [phi_truncatedJ_sub_one]
+    have heq : phi K' L (truncatedJ L (u + 1) σ) + 1 = i_[K'/K]ₜ (phi K' L u + 1) σ := by
+      rw [phi_truncatedJ_sub_one _ (by linarith)]
     have heq' : phi K' L (truncatedJ L (u + 1) σ) = i_[K'/K]ₜ (phi K' L u + 1) σ - 1 := by
       linarith [heq]
     rw [heq']

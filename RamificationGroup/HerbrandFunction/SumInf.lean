@@ -71,7 +71,7 @@ theorem m_lt_n_of_in_G_m_of_notin_G_n {x : (L ≃ₐ[K] L)} {m n : ℤ} (hm : x 
   apply hn
   apply Set.mem_of_subset_of_mem h hm
 
-theorem aux_0 {x : L ≃ₐ[K] L} (hx : x ≠ .refl) : ∃ n : ℤ , x ∈ G(L/K)_[n] ∧ x ∉ G(L/K)_[(n + 1)] := by
+theorem aux_0 {x : L ≃ₐ[K] L} (hx : x ≠ .refl) : ∃ n : ℤ , -1 ≤ n ∧ x ∈ G(L/K)_[n] ∧ x ∉ G(L/K)_[(n + 1)] := by
   by_contra hc; push_neg at hc
   apply hx
   apply (mem_all_lowerRamificationGroup_iff_refl K L).1
@@ -82,10 +82,9 @@ theorem aux_0 {x : L ≃ₐ[K] L} (hx : x ≠ .refl) : ∃ n : ℤ , x ∈ G(L/K
   · simp only [zero_sub, reduceNeg]
     rw [lowerRamificationGroup_eq_decompositionGroup, decompositionGroup_eq_top]
     apply Subgroup.mem_top; rfl
-  · have : ((m : ℤ) + 1 - 1) = ((m : ℤ) - 1 + 1) := by simp only [add_sub_cancel_right,
-    sub_add_cancel]
+  · have : ((m : ℤ) + 1 - 1) = ((m : ℤ) - 1 + 1) := by simp only [add_sub_cancel_right, sub_add_cancel]
     rw [this]
-    apply hc (m - 1) hm
+    apply hc (m - 1) (by linarith) hm
   · rw [lowerRamificationGroup_eq_decompositionGroup, decompositionGroup_eq_top]
     apply Subgroup.mem_top
     simp only [reduceNeg, tsub_le_iff_right, neg_add_cancel, zero_add]
@@ -103,14 +102,14 @@ theorem Raimification_Group_split (n : ℤ) : (⊤ : Finset (L ≃ₐ[K] L)) = (
         by_contra hc1
         apply hc
         apply (mem_all_lowerRamificationGroup_iff_refl K L).2 hc1
-      obtain ⟨t, ht1, ht2⟩ := aux_0 K L h
+      obtain ⟨t, ht1, ht2, ht3⟩ := aux_0 K L h
       use t
       constructor
       · constructor
         --the index is greater than -1
-        · sorry
-        · apply m_lt_n_of_in_G_m_of_notin_G_n K L ht1 hc
-      · simp only [toFinset_diff, mem_sdiff, mem_toFinset, SetLike.mem_coe, ht1, ht2,
+        · exact ht1
+        · apply m_lt_n_of_in_G_m_of_notin_G_n K L ht2 hc
+      · simp only [toFinset_diff, mem_sdiff, mem_toFinset, SetLike.mem_coe, ht2, ht3,
         not_false_eq_true, and_self]
     · push_neg at hc
       right; exact hc
@@ -152,7 +151,8 @@ theorem phi_eq_sum_card {u : ℚ} (hu : 0 < u): phi K L u = (1 / Nat.card G(L/K)
       rw [← mul_assoc, mul_comm (1 / (Nat.card G(L/K)_[0] : ℚ)), mul_assoc, one_div_mul_eq_div]
 
 
-theorem truncatedLowerindex_eq_if_aux {i : ℤ} {u : ℚ} {s : (L ≃ₐ[K] L)} (hgt : -1 < u) (hgt' : -1 ≤ i) (hu : i ≤ (⌈u⌉ - 1)) (hs : s ∈ HerbrandFunction.Ramification_Group_diff K L i) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : i_[L/K]ₜ (u + 1) s = i + 1 := by
+theorem truncatedLowerindex_eq_if_aux {i : ℤ} {u : ℚ} {s : (L ≃ₐ[K] L)} (hgt : -1 < u) (hgt' : -1 ≤ i) (hu : i ≤ (⌈u⌉ - 1)) (hs : s ∈ HerbrandFunction.Ramification_Group_diff K L i) : i_[L/K]ₜ (u + 1) s = i + 1 := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   unfold Ramification_Group_diff at hs
   simp only [Set.toFinset_diff, Finset.mem_sdiff, Set.mem_toFinset, SetLike.mem_coe] at hs
   rcases hs with ⟨hs1, hs2⟩
@@ -251,13 +251,13 @@ theorem truncatedLowerindex_eq_if_aux {i : ℤ} {u : ℚ} {s : (L ≃ₐ[K] L)} 
       rw [add_assoc, one_add_one_eq_two]; exact h2
   exact Rat.ext h5 rfl
 
-theorem sum_of_diff_aux_aux {i : ℤ} {u : ℚ} (hu : 0 ≤ u) (h : i ∈ Finset.Icc (-1) (⌈u⌉ - 1)) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : ∑ s in Ramification_Group_diff K L i, (AlgEquiv.truncatedLowerIndex K L (u + 1) s) = (i + 1) * (Nat.card G(L/K)_[i] - Nat.card G(L/K)_[(i + 1)]) := by
+theorem sum_of_diff_aux_aux {i : ℤ} {u : ℚ} (hu : 0 ≤ u) (h : i ∈ Finset.Icc (-1) (⌈u⌉ - 1)) : ∑ s in Ramification_Group_diff K L i, (AlgEquiv.truncatedLowerIndex K L (u + 1) s) = (i + 1) * (Nat.card G(L/K)_[i] - Nat.card G(L/K)_[(i + 1)]) := by
   calc
      ∑ s in Ramification_Group_diff K L i, (AlgEquiv.truncatedLowerIndex K L (u + 1) s) = ∑ s in Ramification_Group_diff K L i, ((i : ℚ) + 1) := by
       apply sum_equiv (by rfl : (L ≃ₐ[K] L) ≃ (L ≃ₐ[K] L)) (by simp)
       intro s hs
       obtain ⟨h1, h2⟩ := Finset.mem_Icc.1 h
-      apply truncatedLowerindex_eq_if_aux K L (by linarith [hu]) h1 h2 hs hgen
+      apply truncatedLowerindex_eq_if_aux K L (by linarith [hu]) h1 h2 hs
      _ = (i + 1) * (Nat.card G(L/K)_[i] - Nat.card G(L/K)_[(i + 1)]) := by
       simp only [sum_const, smul_add, nsmul_eq_mul, mul_comm, mul_one, Nat.card_eq_fintype_card,
         add_mul, one_mul]
@@ -272,7 +272,8 @@ theorem sum_of_diff_aux_aux {i : ℤ} {u : ℚ} (hu : 0 ≤ u) (h : i ∈ Finset
       ring
       exact Set.card_le_card hsub
 
-theorem truncatedLowerindex_eq_of_lt {s : (L ≃ₐ[K] L)} {u : ℚ} (h : s ∈ G(L/K)_[⌈u⌉]) (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : i_[L/K]ₜ (u + 1) s = u + 1 := by
+theorem truncatedLowerindex_eq_of_lt {s : (L ≃ₐ[K] L)} {u : ℚ} (h : s ∈ G(L/K)_[⌈u⌉]) (hu : 0 ≤ u) : i_[L/K]ₜ (u + 1) s = u + 1 := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   unfold AlgEquiv.truncatedLowerIndex
   by_cases ht : i_[L/K] s = ⊤
   · simp only [ht, ↓reduceDIte]
@@ -295,14 +296,14 @@ theorem truncatedLowerindex_eq_of_lt {s : (L ≃ₐ[K] L)} {u : ℚ} (h : s ∈ 
 
 set_option synthInstance.maxHeartbeats 0
 
-theorem sum_fiberwise_aux {u : ℚ} (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : ((Finset.sum (⊤ : Finset (L ≃ₐ[K] L)) (AlgEquiv.truncatedLowerIndex K L (u + 1) ·))) = ∑ i in Finset.Icc (-1) (⌈u⌉ - 1), ∑ s in Ramification_Group_diff K L i, (AlgEquiv.truncatedLowerIndex K L (u + 1) s) + (u + 1) * (Nat.card ↥ G(L/K)_[⌈u⌉]) := by
+theorem sum_fiberwise_aux {u : ℚ} (hu : 0 ≤ u) : ((Finset.sum (⊤ : Finset (L ≃ₐ[K] L)) (AlgEquiv.truncatedLowerIndex K L (u + 1) ·))) = ∑ i in Finset.Icc (-1) (⌈u⌉ - 1), ∑ s in Ramification_Group_diff K L i, (AlgEquiv.truncatedLowerIndex K L (u + 1) s) + (u + 1) * (Nat.card ↥ G(L/K)_[⌈u⌉]) := by
   rw [Raimification_Group_split K L ⌈u⌉, sum_union, sum_disjiUnion]
   congr 1
   calc
     _ =  ∑ x in (G(L/K)_[⌈u⌉] : Set (L ≃ₐ[K] L)).toFinset , (u + 1) := by
       apply sum_equiv (by rfl : (L ≃ₐ[K] L) ≃ (L ≃ₐ[K] L)) (by simp)
       intro i hi
-      apply truncatedLowerindex_eq_of_lt K L _ hu hgen
+      apply truncatedLowerindex_eq_of_lt K L _ hu
       apply Set.mem_toFinset.1 hi
     _ = (u + 1) * (Nat.card G(L/K)_[⌈u⌉]) := by
       simp [← mul_sum (G(L/K)_[⌈u⌉] : Set (L ≃ₐ[K] L)).toFinset (fun _ => 1) (u + 1), add_mul, mul_comm]
@@ -376,7 +377,8 @@ theorem sum_sub_aux {u : ℚ} (hu : 0 ≤ ⌈u⌉ - 1): (∑ i in Finset.Icc (-1
       exact Eq.symm (Nat.cast_sum (Finset.Icc 0 (-1 + ⌈u⌉)) fun x ↦ Nat.card ↥ G(L/K)_[x])
 
 
-theorem truncatedLowerIndex_aux {u : ℚ} (hu : -1 ≤ u) {x : L ≃ₐ[K] L} (hx : x ∈ G(L/K)_[⌈u⌉]) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : i_[L/K]ₜ (u + 1) x = (u + 1) := by
+theorem truncatedLowerIndex_aux {u : ℚ} (hu : -1 ≤ u) {x : L ≃ₐ[K] L} (hx : x ∈ G(L/K)_[⌈u⌉]) : i_[L/K]ₜ (u + 1) x = (u + 1) := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
   unfold AlgEquiv.truncatedLowerIndex
   by_cases hc : i_[L/K] x = ⊤
   · simp only [hc, ↓reduceDIte]
@@ -400,7 +402,7 @@ theorem truncatedLowerIndex_aux {u : ℚ} (hu : -1 ≤ u) {x : L ≃ₐ[K] L} (h
       simp only [ofNat_toNat, cast_max, cast_zero, le_sup_left]
     · simp only [← Nat.cast_one (R := ℚ), ← Nat.cast_add (m := ⌈u⌉.toNat) (n := 1), Nat.mono_cast h]
 
-theorem phi_eq_sum_inf_aux {u : ℚ} (hu : -1 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : (phi K L u) = (1 / Nat.card G(L/K)_[0]) * ((Finset.sum (⊤ : Finset (L ≃ₐ[K] L)) (AlgEquiv.truncatedLowerIndex K L (u + 1) ·))) - 1 := by
+theorem phi_eq_sum_inf_aux {u : ℚ} (hu : -1 ≤ u) : (phi K L u) = (1 / Nat.card G(L/K)_[0]) * ((Finset.sum (⊤ : Finset (L ≃ₐ[K] L)) (AlgEquiv.truncatedLowerIndex K L (u + 1) ·))) - 1 := by
   by_cases hc : 0 < u
   · have hu' : 0 ≤ ⌈u⌉ - 1 := by
       simp only [sub_nonneg, one_le_ceil_iff]; exact hc
@@ -428,10 +430,10 @@ theorem phi_eq_sum_inf_aux {u : ℚ} (hu : -1 ≤ u) {gen : 𝒪[L]} (hgen : Alg
         apply sum_congr h
         intro x hx
         simp only [Nat.card_eq_fintype_card, cast_mul, cast_add, cast_one, cast_sub,
-          Int.cast_natCast, (sum_of_diff_aux_aux K L (by linarith) hx hgen)]
+          Int.cast_natCast, (sum_of_diff_aux_aux K L (by linarith) hx)]
       _ = (1 / Nat.card G(L/K)_[0]) * ((Finset.sum (⊤ : Finset (L ≃ₐ[K] L)) (AlgEquiv.truncatedLowerIndex K L (u + 1) ·))) - 1 := by
         congr 2
-        apply (sum_fiberwise_aux K L (by linarith) hgen).symm
+        apply (sum_fiberwise_aux K L (by linarith)).symm
   · push_neg at hc
     rw [phi_eq_self_of_le_zero _ _ hc]
     rw [Raimification_Group_split K L 0, sum_union]
@@ -446,7 +448,7 @@ theorem phi_eq_sum_inf_aux {u : ℚ} (hu : -1 ≤ u) {gen : 𝒪[L]} (hgen : Alg
           · simp only [hu', neg_add_cancel]
             unfold truncatedLowerIndex
             simp only [decompositionGroup_eq_top, mem_top, lowerIndex_eq_top_iff_eq_refl,Nat.cast_nonneg, inf_of_le_left, dite_eq_ite, ite_self]
-          · rw [truncatedLowerindex_eq_if_aux K L _ (by linarith) _ hx hgen]
+          · rw [truncatedLowerindex_eq_if_aux K L _ (by linarith) _ hx]
             simp only [reduceNeg, cast_neg, cast_one, neg_add_cancel]
             apply lt_of_le_of_ne hu
             exact fun a ↦ hu' (id (Eq.symm a))
@@ -461,7 +463,7 @@ theorem phi_eq_sum_inf_aux {u : ℚ} (hu : -1 ≤ u) {gen : 𝒪[L]} (hgen : Alg
           rw [h, Finset.cast_card, Finset.sum_mul, one_mul]
           apply Finset.sum_congr rfl
           intro x hx
-          apply truncatedLowerIndex_aux K L hu _ hgen
+          apply truncatedLowerIndex_aux K L hu _
           by_cases hu' : u = -1
           · rw [hu']
             apply mem_lowerRamificationGroup_of_le_neg_one

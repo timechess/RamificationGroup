@@ -10,6 +10,7 @@ import RamificationGroup.ForMathlib.AlgEquiv.Basic
 
 
 open LocalField DiscreteValuation Valued Valuation AlgEquiv Classical IsDiscreteValuationRing Polynomial Algebra
+#check IsDiscrete
 
 variable {K M L : Type*} [Field K] [Field M] [Field L]
 [Algebra K L] [Algebra K M] [Algebra M L] [IsScalarTower K M L] [Normal K M]
@@ -635,7 +636,7 @@ theorem Polynomial.roots_of_valuationSubring (x : PowerBasis 𝒪[K] 𝒪[L]) : 
     apply Polynomial.Separable.map
     apply Algebra.IsSeparable.isSeparable
 
-theorem aux_11 (x : PowerBasis 𝒪[K] 𝒪[L]) : Polynomial.map (algebraMap 𝒪[M] 𝒪[L]) (minpoly 𝒪[M] x.gen) = ∏ t ∈ (⊤ : Set (L ≃ₐ[M] L)).toFinset, (X - C (⟨t x.gen, algEquiv_PowerBasis_mem_valuationSubring x t⟩ : 𝒪[L])) := by
+theorem Minpoly_eq_prod (x : PowerBasis 𝒪[K] 𝒪[L]) : Polynomial.map (algebraMap 𝒪[M] 𝒪[L]) (minpoly 𝒪[M] x.gen) = ∏ t ∈ (⊤ : Set (L ≃ₐ[M] L)).toFinset, (X - C (⟨t x.gen, algEquiv_PowerBasis_mem_valuationSubring x t⟩ : 𝒪[L])) := by
   rw [← Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq (p := (Polynomial.map (algebraMap 𝒪[M] 𝒪[L]) (minpoly 𝒪[M] x.gen)))]
   simp only [Set.top_eq_univ, Set.toFinset_univ, aux_14 x, Finset.prod_eq_multiset_prod]
   rw [aux_19 x]
@@ -709,7 +710,7 @@ theorem aux_1 (σ : M ≃ₐ[K] M) (hσ : σ ≠ .refl) (x : PowerBasis 𝒪[K] 
       have ugly : ∀ x_1 : L ≃ₐ[M] L, - (X - C (⟨x_1 ↑x.gen, hin x_1⟩ : 𝒪[L])) = -1 * (X - C (⟨x_1 ↑x.gen, hin x_1⟩ : 𝒪[L])) := by
         intro t
         ring
-      simp only [f, aux_11, ← neg_sub X, ugly, Finset.prod_mul_distrib, Finset.prod_const]
+      simp only [f, Minpoly_eq_prod, ← neg_sub X, ugly, Finset.prod_mul_distrib, Finset.prod_const]
     have hf : ∀ n : ℕ, f.coeff n = (-1) ^ (⊤ : (Set (L ≃ₐ[M] L))).toFinset.card * algebraMap 𝒪[M] 𝒪[L] (i n) := by
       intro n
       simp only [hmin, i]
@@ -824,7 +825,7 @@ theorem aux_2 (σ : M ≃ₐ[K] M) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBa
       have ugly : ∀ x_1 : L ≃ₐ[M] L, - (X - C (⟨x_1 ↑x.gen, hin x_1⟩ : 𝒪[L])) = -1 * (X - C (⟨x_1 ↑x.gen, hin x_1⟩ : 𝒪[L])) := by
         intro t
         ring
-      simp only [f, aux_11, ← neg_sub X, ugly, Finset.prod_mul_distrib, Finset.prod_const]
+      simp only [f, Minpoly_eq_prod, ← neg_sub X, ugly, Finset.prod_mul_distrib, Finset.prod_const]
     simp only [neg_eq_iff_eq_neg] at ha
     simp only [ha, hb, sf, hmin]
     use (-1) * ((-1) ^ (⊤ : (Set (L ≃ₐ[M] L))).toFinset.card * eval x.gen (Polynomial.map e (Polynomial.map (algebraMap 𝒪[M] 𝒪[L]) h)))
@@ -844,9 +845,11 @@ theorem aux_2 (σ : M ≃ₐ[K] M) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBa
   exact hdvd
 
 theorem prop3
-  (σ : M ≃ₐ[K] M) (x : PowerBasis 𝒪[K] 𝒪[L]) (y : PowerBasis 𝒪[K] 𝒪[M]) [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[K]) (IsLocalRing.ResidueField 𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[M]) (IsLocalRing.ResidueField 𝒪[L])] :
+  (σ : M ≃ₐ[K] M) [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[K]) (IsLocalRing.ResidueField 𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[K]) (IsLocalRing.ResidueField 𝒪[M])] [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[M]) (IsLocalRing.ResidueField 𝒪[L])]:
     ∑ s ∈ ((restrictNormalHom M)⁻¹' {σ}), i_[L/K] s
     = (ramificationIdx M L) * i_[M/K] σ := by
+  let x := PowerBasisValExtension K L
+  let y := PowerBasisValExtension K M
   by_cases hσ : σ = .refl
   · subst hσ
     rw [lowerIndex_refl, ENat.mul_top]

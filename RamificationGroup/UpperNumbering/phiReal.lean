@@ -2,9 +2,10 @@ import RamificationGroup.UpperNumbering.Basic
 import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 import RamificationGroup.Valuation.Extension
 
+
 open QuotientGroup IntermediateField DiscreteValuation Valued Valuation HerbrandFunction MeasureTheory.MeasureSpace intervalIntegral Pointwise AlgEquiv ExtDVR Asymptotics Filter intervalIntegral MeasureTheory
 
-variable (K K' L : Type*) {ΓK : outParam Type*} [Field K] [Field K'] [Field L] [vK : Valued K ℤₘ₀] [vK' : Valued K' ℤₘ₀] [vL : Valued L ℤₘ₀] [IsDiscrete vK.v] [IsDiscrete vK'.v] [IsDiscrete vL.v] [Algebra K L] [Algebra K K'] [Algebra K' L] [IsScalarTower K K' L] [IsValExtension vK.v vK'.v] [IsValExtension vK'.v vL.v] [IsValExtension vK.v vL.v] [Normal K K'] [Normal K L] [FiniteDimensional K L] [FiniteDimensional K K'] [FiniteDimensional K' L]
+variable (K K' L : Type*) {ΓK : outParam Type*} [Field K] [Field K'] [Field L] [vK : Valued K ℤₘ₀] [vK' : Valued K' ℤₘ₀] [vL : Valued L ℤₘ₀] [IsDiscrete vK.v] [IsDiscrete vK'.v] [IsDiscrete vL.v] [Algebra K L] [Algebra K K'] [Algebra K' L] [IsScalarTower K K' L] [IsValExtension vK.v vK'.v] [IsValExtension vK'.v vL.v] [IsValExtension vK.v vL.v] [Normal K K'] [Normal K L] [FiniteDimensional K L] [FiniteDimensional K K'] [FiniteDimensional K' L] [Algebra.IsSeparable K L] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])]
 
 local notation:max " G(" L:max "/" K:max ")^[" v:max "] " => upperRamificationGroup_aux K L v
 
@@ -76,7 +77,14 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
   apply Nat.cast_nonneg
   apply Nat.cast_nonneg
 
+
+#check spectralNorm_unique
+#check spectralNorm_eq_of_equiv
 --------------------------------for lower
+theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+  refine Eq.symm (map_eq_of_sub_lt v ?_)
+  sorry
+
 #check mem_decompositionGroup
 variable [CompleteSpace K]
 instance {u : ℤ} : Subgroup.Normal (lowerRamificationGroup K L u) where
@@ -92,8 +100,13 @@ instance {u : ℤ} : Subgroup.Normal (lowerRamificationGroup K L u) where
         exact ha
       let hn' := hn (g⁻¹ a) hg
       have hg' := mem_decompositionGroup g
-
-      sorry
+      rw [Val_AlgEquiv_eq K L g, _root_.map_sub] at hn'
+      have hgg : g (g⁻¹ a) = a := by exact (eq_symm_apply g).mp rfl
+      rw [hgg] at hn'
+      exact hn'
+      refine Subring.sub_mem v.integer ?_ hg
+      rw [mem_integer_iff, val_map_le_one_iff (mem_decompositionGroup n)]
+      exact hg
 
 
 ------------------------------for lower
@@ -107,7 +120,9 @@ theorem lowerIndex_eq_of_subgroup_aux {t : L ≃ₐ[K] L} {k : L ≃ₐ[K'] L} (
   rw [h'']
 
 variable [CompleteSpace K] [CompleteSpace K']
-theorem RamificationGroup_of_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0 ≤ n) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : t ∈ G(L/K')_[n].map (AlgEquiv.restrictScalarsHom K) → t ∈ G(L/K)_[n] := by
+theorem RamificationGroup_of_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0 ≤ n) : t ∈ G(L/K')_[n].map (AlgEquiv.restrictScalarsHom K) → t ∈ G(L/K)_[n] := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
+  obtain ⟨gen', hgen'⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K') (L := L)
   intro ht
   rw [← Int.toNat_of_nonneg (a := n)]
   apply (mem_lowerRamificationGroup_iff_of_generator (K := K) (L := L) hgen ?_ n.toNat).2
@@ -124,12 +139,14 @@ theorem RamificationGroup_of_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0 
     }
   apply hn
 
-theorem RamificationGroup_iff_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0 ≤ n) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : t ∈ G(L/K')_[n].map (AlgEquiv.restrictScalarsHom K) ↔ t ∈ G(L/K)_[n] ⊓ (⊤ : Subgroup (L ≃ₐ[K'] L)).map (restrictScalarsHom K) := by
+theorem RamificationGroup_iff_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0 ≤ n) : t ∈ G(L/K')_[n].map (AlgEquiv.restrictScalarsHom K) ↔ t ∈ G(L/K)_[n] ⊓ (⊤ : Subgroup (L ≃ₐ[K'] L)).map (restrictScalarsHom K) := by
+  obtain ⟨gen, hgen⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K) (L := L)
+  obtain ⟨gen', hgen'⟩ := AlgEquiv.Simple_Extension_of_CDVR (K := K') (L := L)
   constructor
   <;> intro ht
   · rw [Subgroup.mem_inf]
     constructor
-    · apply RamificationGroup_of_Subgroup_aux K K' L hn hgen hgen' ht
+    · apply RamificationGroup_of_Subgroup_aux K K' L hn ht
     · obtain ⟨k, _, hk2⟩ := Subgroup.mem_map.1 ht
       apply Subgroup.mem_map.2
       use k
@@ -158,7 +175,7 @@ theorem RamificationGroup_iff_Subgroup_aux {t : L ≃ₐ[K] L} {n : ℤ} (hn : 0
       apply hn
     · apply hk2
 
-theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) : (Nat.card (Subgroup.map (AlgEquiv.restrictNormalHom K') G(L/K)_[⌈x⌉]) : ℝ) * (Nat.card G(L/K')_[⌈x⌉] : ℝ) = (Nat.card G(L/K)_[⌈x⌉] : ℝ) := by
+theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) : (Nat.card (Subgroup.map (AlgEquiv.restrictNormalHom K') G(L/K)_[⌈x⌉]) : ℝ) * (Nat.card G(L/K')_[⌈x⌉] : ℝ) = (Nat.card G(L/K)_[⌈x⌉] : ℝ) := by
   norm_cast
   haveI h1 : G(L/K')_[⌈x⌉] ≃ (G(L/K')_[⌈x⌉].map (AlgEquiv.restrictScalarsHom K)) := by
     let f : G(L/K')_[⌈x⌉] → (G(L/K')_[⌈x⌉].map (AlgEquiv.restrictScalarsHom K)) := (fun t => ⟨ (AlgEquiv.restrictScalarsHom K) t.1,by exact Subgroup.apply_coe_mem_map (AlgEquiv.restrictScalarsHom K) G(L/K')_[⌈x⌉] t⟩)
@@ -186,7 +203,7 @@ theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) {gen : 𝒪[L]}
     <;> intro ht
     · apply Subgroup.mem_inf.2
       constructor
-      · rw [(RamificationGroup_iff_Subgroup_aux K K' L ?_ hgen hgen'), Subgroup.mem_inf] at ht
+      · rw [(RamificationGroup_iff_Subgroup_aux K K' L ?_), Subgroup.mem_inf] at ht
         apply ht.1
         apply Int.ceil_nonneg hx
       · apply (MonoidHom.mem_ker (f := AlgEquiv.restrictNormalHom K')).2
@@ -194,7 +211,7 @@ theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) {gen : 𝒪[L]}
         rw [← hy2]
         apply AlgEquiv.restrictNormalHom_restrictScalarsHom
     · rw [AlgEquiv.restrictNormal_ker_eq] at ht
-      apply (RamificationGroup_iff_Subgroup_aux K K' L ?_ hgen hgen').2 ht
+      apply (RamificationGroup_iff_Subgroup_aux K K' L ?_).2 ht
       apply Int.ceil_nonneg hx
   rw [Nat.card_congr h1, Nat.card_congr h2, h3]
   have h4 : Nat.card (↥ G(L/K)_[⌈x⌉] ⧸ ( G(L/K)_[⌈x⌉] ⊓ (AlgEquiv.restrictNormalHom K').ker).subgroupOf G(L/K)_[⌈x⌉] ) * Nat.card ((G(L/K)_[⌈x⌉] ⊓ (AlgEquiv.restrictNormalHom K').ker).subgroupOf G(L/K)_[⌈x⌉])= Nat.card (G(L/K)_[⌈x⌉]) := by
@@ -224,20 +241,22 @@ theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) {gen : 𝒪[L]}
   symm
   apply Equiv.ofBijective f hf
 
+#check IsDedekindDomain
 
 variable [IsScalarTower 𝒪[K] 𝒪[K'] 𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
 theorem RamificationGroup_card_zero_comp_aux : (Nat.card G(K'/K)_[0] : ℝ) * (Nat.card G(L/K')_[0] : ℝ) = (Nat.card G(L/K)_[0] : ℝ) := by
   repeat rw [RamificationIdx_eq_card_of_inertia_group]
   norm_cast
   unfold LocalField.ramificationIdx IsLocalRing.ramificationIdx
-  let e_K'K := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[K'])
-  let e_LK' := Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L])
-  let e_LK := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[L])
-  have h : (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_K'K * e_LK') = (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_LK) := by
-    dsimp [e_K'K, e_LK', e_LK]
-    rw [← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K L), mul_comm, pow_mul, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K' L), ← Ideal.map_pow, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K K'), Ideal.map_map, ← IsScalarTower.algebraMap_eq]
-  
-  sorry
+  symm
+  apply Ideal.ramificationIdx_algebra_tower (R := 𝒪[K]) (S := 𝒪[K']) (T := 𝒪[L]) (p := (IsLocalRing.maximalIdeal ↥𝒪[K])) (P := (IsLocalRing.maximalIdeal ↥𝒪[K'])) (Q := (IsLocalRing.maximalIdeal ↥𝒪[L]))
+  repeat sorry
+  -- let e_K'K := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[K'])
+  -- let e_LK' := Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L])
+  -- let e_LK := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[L])
+  -- have h : (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_K'K * e_LK') = (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_LK) := by
+  --   dsimp [e_K'K, e_LK', e_LK]
+  --   rw [← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K L), mul_comm, pow_mul, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K' L), ← Ideal.map_pow, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K K'), Ideal.map_map, ← IsScalarTower.algebraMap_eq]
 
 theorem phiDerivReal_integrableOn_section {k : ℤ} (hk : 0 ≤ k): IntegrableOn (phiDerivReal K L) (Set.Ioc (k : ℝ) (k + 1 : ℝ)) μ := by
   apply IntegrableOn.congr_fun_ae (f := fun x => (Nat.card G(L/K)_[⌈k + 1⌉] : ℝ) / (Nat.card G(L/K)_[0] : ℝ))
@@ -699,7 +718,7 @@ theorem phiReal_StrictMono : StrictMono (phiReal K L) := by
     rw [phiReal_eq_self_of_le_zero K L (le_of_lt ha'), phiReal_eq_self_of_le_zero K L hb]
     exact hab
 
-theorem phiReal_injective {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : Function.Injective (phiReal K L) := by
+theorem phiReal_injective : Function.Injective (phiReal K L) := by
   intro a1 a2 h
   contrapose! h
   by_cases h1 : a1 > a2
@@ -708,7 +727,7 @@ theorem phiReal_injective {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} =
     apply ne_of_lt (phiReal_StrictMono K L (lt_of_le_of_ne h1 h))
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K L] in
-theorem phiReal_phi_ceil_eq_aux {u : ℝ} (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) : ∃ u' : ℚ, ⌈u⌉ = ⌈u'⌉ ∧ ⌈phiReal K L u⌉ = ⌈phi K L u'⌉ := by
+theorem phiReal_phi_ceil_eq_aux {u : ℝ} (hu : 0 ≤ u) : ∃ u' : ℚ, ⌈u⌉ = ⌈u'⌉ ∧ ⌈phiReal K L u⌉ = ⌈phi K L u'⌉ := by
   by_cases hc : u = ⌈u⌉
   · use ⌈u⌉
     constructor
@@ -717,12 +736,12 @@ theorem phiReal_phi_ceil_eq_aux {u : ℝ} (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen :
       apply Int.cast_nonneg.mpr (Int.ceil_nonneg hu)
   · by_cases hc' : phiReal K L u = ⌈phiReal K L u⌉
     · have h : ∃ u' : ℚ, u' = u := by
-        have h' : ∃ u' : ℚ, phi K L u' = ⌈phiReal K L u⌉ := by apply (phi_Bijective_aux K L hgen).2
+        have h' : ∃ u' : ℚ, phi K L u' = ⌈phiReal K L u⌉ := by apply (phi_Bijective_aux K L).2
         obtain ⟨u', hu'⟩ := h'
         use u'
         have haux : (phi K L u' : ℝ) = ⌈phiReal K L u⌉ := by simp only [hu', Rat.cast_intCast]
         rw [← hc', ← phiReal_eq_phi K L ?_] at haux
-        apply phiReal_injective K L hgen haux
+        apply phiReal_injective K L haux
         have h : (0 : ℝ) ≤ phi K L u' := by
           rw [haux]
           apply phiReal_nonneg K L hu
@@ -848,24 +867,24 @@ theorem phiReal_phi_ceil_eq_aux {u : ℝ} (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen :
         apply Rat.cast_nonneg.1 (le_trans hu hu'1)
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K L] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [CompleteSpace K] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem herbrand_Real (u : ℝ) (hu : 0 ≤ u) {gen : 𝒪[K']} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K] {gen'} = ⊤) {gen'' : 𝒪[L]} (hgen'' : Algebra.adjoin 𝒪[K'] {gen''} = ⊤) : G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K') = G(K'/K)_[⌈phiReal K' L u⌉] := by
-  obtain ⟨u', hu'1, hu'2⟩ := phiReal_phi_ceil_eq_aux K' L (u := u) hu hgen''
+theorem herbrand_Real (u : ℝ) (hu : 0 ≤ u)  : G(L/K)_[⌈u⌉].map (AlgEquiv.restrictNormalHom K') = G(K'/K)_[⌈phiReal K' L u⌉] := by
+  obtain ⟨u', hu'1, hu'2⟩ := phiReal_phi_ceil_eq_aux K' L (u := u) hu
   rw [hu'1, hu'2]
-  apply herbrand (K := K) (K' := K') (L := L) u' hgen hgen'
+  apply herbrand (K := K) (K' := K') (L := L) u'
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable K L] [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L] [CompleteSpace K'] [CompleteSpace K] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] in
-theorem phiDerivReal_comp {u : ℝ} (hu : 0 ≤ u) {gen : 𝒪[L]} (hgen : Algebra.adjoin 𝒪[K] {gen} = ⊤) {gen' : 𝒪[L]} (hgen' : Algebra.adjoin 𝒪[K'] {gen'} = ⊤) {gen'' : 𝒪[K']} (hgen'' : Algebra.adjoin 𝒪[K] {gen''} = ⊤) {gen''' : 𝒪[L]} (hgen''' : Algebra.adjoin 𝒪[K] {gen'''} = ⊤) : (phiDerivReal K' L u) * phiDerivReal K K' (phiReal K' L u) = phiDerivReal K L u := by
+theorem phiDerivReal_comp {u : ℝ} (hu : 0 ≤ u) : (phiDerivReal K' L u) * phiDerivReal K K' (phiReal K' L u) = phiDerivReal K L u := by
   unfold phiDerivReal
   rw [← mul_div_mul_comm]
   congr
-  · rw [← Int.ceil_intCast (α := ℝ) (z := (max 0 ⌈u⌉)), ← RamificationGroup_card_comp_aux K K' L ?_ hgen hgen', mul_comm]
+  · rw [← Int.ceil_intCast (α := ℝ) (z := (max 0 ⌈u⌉)), ← RamificationGroup_card_comp_aux K K' L ?_, mul_comm]
     congr 1
-    rw [max_eq_right, ← herbrand_Real K K' L _ hu hgen'' hgen''' hgen', max_eq_right]
+    rw [max_eq_right, ← herbrand_Real K K' L _ hu, max_eq_right]
     simp only [Subgroup.mem_map, Int.ceil_intCast]
     apply Int.ceil_nonneg hu
     apply Int.ceil_nonneg
     apply phiReal_nonneg K' L hu
     simp only [Int.cast_max, Int.cast_zero, le_max_iff, le_refl, Int.cast_nonneg, true_or]
-  · rw [← Int.ceil_zero (α := ℝ), ← RamificationGroup_card_comp_aux K K' L (by linarith) hgen hgen', mul_comm]
+  · rw [← Int.ceil_zero (α := ℝ), ← RamificationGroup_card_comp_aux K K' L (by linarith), mul_comm]
     congr 1
-    rw [herbrand_Real K K' L _ (by linarith) hgen'' hgen''' hgen', phiReal_zero_eq_zero]
+    rw [herbrand_Real K K' L _ (by linarith), phiReal_zero_eq_zero]
