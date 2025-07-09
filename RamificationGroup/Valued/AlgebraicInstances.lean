@@ -6,7 +6,7 @@ import RamificationGroup.ForMathlib.Algebra.Algebra.Basic
 
 open DiscreteValuation Valuation Valued ExtDVR IsValExtension Polynomial
 
--- `IsDiscrete vK.v` may be weakened to `Nontrivial vK.v`.
+-- `IsDiscrete vK.v` may be weakened to `IsNontrivial vK.v`.
 variable (K L : Type*) [Field K] [Field L] [vK : Valued K ℤₘ₀] [vL : Valued L ℤₘ₀]  [Algebra K L] [IsValExtension vK.v vL.v] [FiniteDimensional K L]
 
 section algebra_instances
@@ -78,7 +78,7 @@ instance [CompleteSpace K] [Algebra.IsSeparable K L] : IsNoetherian 𝒪[K] 𝒪
 
 set_option maxHeartbeats 0
 noncomputable def PowerBasisValExtension [CompleteSpace K] [Algebra.IsSeparable K L] [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[K]) (IsLocalRing.ResidueField 𝒪[L])] : PowerBasis 𝒪[K] 𝒪[L] :=
-  letI : Nontrivial vL.v := nontrivial_of_valExtension K L
+  letI : IsNontrivial vL.v := nontrivial_of_valExtension K L
   letI : IsDiscreteValuationRing 𝒪[L] := aux6 K L
   PowerBasisExtDVR (algebraMap_injective)
 
