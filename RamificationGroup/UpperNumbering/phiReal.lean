@@ -250,7 +250,8 @@ theorem Ideal_map_ne_bot : Ideal.map (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocal
 #check Valuation.Integers.isUnit_iff_valuation_eq_one
 omit [CompleteSpace K] in
 theorem MaximalIdeal_iff_val_lt_one {x : 𝒪[K]} : x ∈ IsLocalRing.maximalIdeal 𝒪[K] ↔ vK.v x < 1 := by
-  sorry
+  simp only [IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
+  exact Integer.not_isUnit_iff_valuation_lt_one x
 
 omit [Normal K L] in
 theorem coe_algbraMap_eq_algebraMap_coe {x : 𝒪[K]} : ((algebraMap 𝒪[K] 𝒪[L]) x : L) = algebraMap K L (x : K) := by
