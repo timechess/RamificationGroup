@@ -112,6 +112,8 @@ open LocalField ExtDVR
 
 -- theorem integerAlgebra_integral_of_integral
 
+instance : Module.Finite ↥𝒪[K] ↥𝒪[L] := sorry 
+
 #check exists_isUniformizer_of_isDiscrete
 set_option synthInstance.maxHeartbeats 0
 theorem ramificationIdx_ne_zero [CompleteSpace K] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])]: ramificationIdx K L ≠ 0 := by

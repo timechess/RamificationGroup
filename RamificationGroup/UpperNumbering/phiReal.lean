@@ -242,6 +242,29 @@ theorem RamificationGroup_card_comp_aux {x : ℝ} (hx : 0 ≤ x) : (Nat.card (Su
   apply Equiv.ofBijective f hf
 
 #check IsDedekindDomain
+#check Ideal.map_eq_bot_iff_of_injective
+omit [Normal K L] in
+theorem Ideal_map_ne_bot : Ideal.map (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K]) ≠ ⊥ := fun hc ↦ IsDiscreteValuationRing.not_a_field (↥𝒪[K])
+    ((Ideal.map_eq_bot_iff_of_injective (IsValExtension.integerAlgebra_injective K L)).mp hc)
+
+#check Valuation.Integers.isUnit_iff_valuation_eq_one
+omit [CompleteSpace K] in
+theorem MaximalIdeal_iff_val_lt_one {x : 𝒪[K]} : x ∈ IsLocalRing.maximalIdeal 𝒪[K] ↔ vK.v x < 1 := by
+  sorry
+
+omit [Normal K L] in
+theorem coe_algbraMap_eq_algebraMap_coe {x : 𝒪[K]} : ((algebraMap 𝒪[K] 𝒪[L]) x : L) = algebraMap K L (x : K) := by
+  simp only [IsValExtension.val_algebraMap]
+
+#check Ideal.map_le_iff_le_comap
+theorem Ideal.map_maximalIdeal_le_maximalIdeal : Ideal.map (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) ≤ IsLocalRing.maximalIdeal ↥𝒪[L] := by
+  rw [Ideal.map_le_iff_le_comap]
+  intro x hx
+  simp only [mem_comap]
+  rw [MaximalIdeal_iff_val_lt_one] at hx ⊢
+  rw [coe_algbraMap_eq_algebraMap_coe, IsValExtension.val_map_lt_one_iff vK'.v vL.v]
+  exact hx
+
 
 variable [IsScalarTower 𝒪[K] 𝒪[K'] 𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
 theorem RamificationGroup_card_zero_comp_aux : (Nat.card G(K'/K)_[0] : ℝ) * (Nat.card G(L/K')_[0] : ℝ) = (Nat.card G(L/K)_[0] : ℝ) := by
@@ -250,7 +273,10 @@ theorem RamificationGroup_card_zero_comp_aux : (Nat.card G(K'/K)_[0] : ℝ) * (N
   unfold LocalField.ramificationIdx IsLocalRing.ramificationIdx
   symm
   apply Ideal.ramificationIdx_algebra_tower (R := 𝒪[K]) (S := 𝒪[K']) (T := 𝒪[L]) (p := (IsLocalRing.maximalIdeal ↥𝒪[K])) (P := (IsLocalRing.maximalIdeal ↥𝒪[K'])) (Q := (IsLocalRing.maximalIdeal ↥𝒪[L]))
-  repeat sorry
+  exact Ideal_map_ne_bot K' L
+  exact Ideal_map_ne_bot K L
+  exact Ideal.map_maximalIdeal_le_maximalIdeal _ _
+
   -- let e_K'K := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[K'])
   -- let e_LK' := Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L])
   -- let e_LK := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[L])
