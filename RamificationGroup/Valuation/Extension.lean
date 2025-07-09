@@ -16,16 +16,12 @@ variable [Algebra A B] [IsLocalHom (algebraMap A B)]
 variable [Algebra.IsSeparable (ResidueField A) (ResidueField B)]
 variable [Module.Finite A B]
 
-instance : FiniteDimensional (ResidueField A) (ResidueField B) := by
-  -- apply FiniteDimensional.of_rank_eq_nat
-  -- apply IsLocalRing.ResidueField.finite_of_module_finite
-  -- obtain ⟨n, hn⟩ := IsLocalRing.ResidueField.finite_of_module_finite (R := A) (S := B)
-  sorry
-  -- sorry
-  -- apply IsLocalRing.ResidueField.finite_of_module_finite
+
+instance : FiniteDimensional (ResidueField A) (ResidueField B) := IsLocalRing.ResidueField.finite_of_module_finite (R := A) (S := B)
+
+
 
 variable (A) (B) in
-omit [Module.Finite A B] in
 /-- There exists `x : B` generating `k_B` over `k_A` -/
 theorem exists_lift_residue_primitive : ∃x : B, (ResidueField A)⟮residue B x⟯ = ⊤ := by
   let x := (Field.exists_primitive_element (ResidueField A) (ResidueField B)).choose
@@ -55,7 +51,7 @@ variable {f : A[X]} (h_red : f.map (residue A) = minpoly (ResidueField A) (resid
 variable {ϖ : B} (hϖ : Irreducible ϖ)
 
 include hx hϖ h_red
-omit [Algebra.IsSeparable (ResidueField A) (ResidueField B)] [Module.Finite A B] h_red hϖ in
+omit [Algebra.IsSeparable (ResidueField A) (ResidueField B)] h_red hϖ in
 /-- Auxiliary lemma: `A[x, ϖ] ⊔ m_B = ⊤`. Can be strenthened to `A[x] ⊔ m_B = B`-/
 lemma adjoin_lift_residue_primitive_and_irreducible_sup_maximalIdeal_eq_top : toSubmodule (Algebra.adjoin A {x, ϖ}) ⊔ (IsLocalRing.maximalIdeal B).restrictScalars A = ⊤ := by
   rw [eq_top_iff]
@@ -78,7 +74,7 @@ lemma adjoin_lift_residue_primitive_and_irreducible_sup_maximalIdeal_eq_top : to
       (map_surjective (residue A) Ideal.Quotient.mk_surjective g0).choose_spec,
       ← aeval_def, hg0, sub_self]
 
-omit [Algebra.IsSeparable (ResidueField A) (ResidueField B)] [Module.Finite A B] h_red in
+omit [Algebra.IsSeparable (ResidueField A) (ResidueField B)] h_red in
 /-- Auxiliary lemma: `A[x, ϖ] ⊔ m_B ^ i = ⊤` for any `i : ℕ`-/
 lemma adjoin_lift_residue_primitive_and_irreducible_sup_maximalIdeal_pow_eq_top (i : ℕ) : toSubmodule (Algebra.adjoin A {x, ϖ}) ⊔ (IsLocalRing.maximalIdeal B ^ i).restrictScalars A = ⊤ := by
   induction' i with i hi
@@ -208,7 +204,7 @@ noncomputable def PowerBasisExtDVR (h : Function.Injective (algebraMap A B)) : P
     (AlgEquiv.ofTop (exists_primitive h).choose_spec)
 
 section ramiIdx
-omit [Module.Finite A B] in
+
 theorem maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (h_inj : Function.Injective (algebraMap A B)) :
   (IsLocalRing.maximalIdeal A).map (algebraMap A B) = IsLocalRing.maximalIdeal B ^
     (Ideal.ramificationIdx (algebraMap A B)
@@ -235,7 +231,7 @@ theorem maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (h_inj : Function.I
     simp only [le_refl, true_implies] at h
     omega
 
-omit [Module.Finite A B] in
+
 theorem ramificationIdx_ne_zero_of_injective_of_integral (h_inj : Function.Injective (algebraMap A B))
   (h_int : (algebraMap A B).IsIntegral) :
     Ideal.ramificationIdx (algebraMap A B)
