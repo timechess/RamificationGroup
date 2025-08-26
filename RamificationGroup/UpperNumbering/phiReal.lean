@@ -82,8 +82,25 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
 #check spectralNorm_eq_of_equiv
 --------------------------------for lower
 theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+  let f : AlgebraNorm K L := {
+    toFun x := ‖x‖
+    map_zero' := norm_zero
+    add_le' r s :=  _root_.norm_add_le r s
+    neg' r := norm_neg r
+    mul_le' x y := norm_mul_le x y
+    eq_zero_of_map_eq_zero' x := by
+      simp only [_root_.norm_eq_zero, imp_self]
+    smul' a x := by
+      simp only
+      
+      sorry
+  }
+  have h1 : ‖x‖ = ‖g x‖ := by
 
-  sorry
+    sorry
+  apply le_antisymm
+  · sorry
+  · sorry
 
 #check mem_decompositionGroup
 variable [CompleteSpace K]
