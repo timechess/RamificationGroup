@@ -507,8 +507,12 @@ set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
-  -- rw [← Algebra.IsInvariant.card_inertia (L ≃ₐ[K'] L) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
+  haveI : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := sorry
+  haveI : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := sorry
+  haveI : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) := sorry
+  rw [← Algebra.IsInvariant.card_inertia (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
   sorry
+  exact IsDiscreteValuationRing.not_a_field ↥𝒪[K']
 
 set_option maxHeartbeats 0
 variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
