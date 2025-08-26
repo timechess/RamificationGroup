@@ -505,12 +505,30 @@ theorem lowerIndex_eq_inf (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ 
 
 set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := {
+    isInvariant := by
+      intro x hx
+      sorry
+  }
+
+instance : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := {
+    over := by
+      unfold Ideal.under
+
+      sorry
+  }
+
+-- instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) where
+--   isSeparable' := by sorry
+
+variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
-  haveI : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := sorry
-  haveI : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := sorry
   haveI : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) := sorry
   rw [← Algebra.IsInvariant.card_inertia (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
+  simp only [decompositionGroup_eq_top, Subgroup.mem_top, neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, true_and, Subgroup.mem_mk, Set.mem_setOf_eq, Nat.card_eq_fintype_card, AddSubgroup.mem_inertia, AlgEquiv.smul_def, Submodule.mem_toAddSubgroup, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
+  apply Fintype.card_congr'
+
   sorry
   exact IsDiscreteValuationRing.not_a_field ↥𝒪[K']
 
