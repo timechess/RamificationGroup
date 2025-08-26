@@ -111,10 +111,9 @@ variable (K L : Type*) {ΓK ΓL : outParam Type*} [Field K] [Field L]
 open LocalField ExtDVR
 
 -- theorem integerAlgebra_integral_of_integral
-instance : Algebra.IsSeparable K L := sorry
+variable [Algebra.IsSeparable K L]
 instance : CompleteSpace K := sorry
 
-instance : IsIntegralClosure (↥𝒪[L]) (↥𝒪[K]) L := inferInstance
 
 instance : Module.Finite ↥𝒪[K] ↥𝒪[L] := IsIntegralClosure.finite 𝒪[K] K L 𝒪[L]
 
