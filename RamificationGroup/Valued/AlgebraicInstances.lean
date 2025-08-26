@@ -40,26 +40,26 @@ attribute [local instance 1001] Algebra.toSMul
 
 instance : IsScalarTower 𝒪[K] 𝒪[L] L := inferInstanceAs (IsScalarTower vK.v.integer vL.v.integer L)
 
-instance [CompleteSpace K] : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
-  isIntegral := by
-    intro ⟨x, hx⟩
-    rw [show x ∈ 𝒪[L] ↔ x ∈ vL.v.valuationSubring by rfl,
-      (Valuation.isEquiv_iff_valuationSubring _ _).mp
-        (extension_valuation_equiv_extendedValuation_of_discrete (IsValExtension.val_isEquiv_comap (R := K) (A := L))),
-      ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, Subalgebra.mem_toSubring] at hx
-    rcases hx with ⟨p, hp⟩
-    refine ⟨p, hp.1, ?_⟩
-    ext
-    rw [show (0 : 𝒪[L]).val = 0 by rfl, ← hp.2]
-    calc
-      _ = 𝒪[L].subtype (eval₂ (algebraMap 𝒪[K] 𝒪[L]) ⟨x, hx⟩ p) := rfl
-      _ = _ := by
-        rw [Polynomial.hom_eval₂]
-        -- simp only [ValuationSubring.algebraMap_def]
-        congr
+instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] := sorry
+  -- isIntegral := by
+  --   intro ⟨x, hx⟩
+  --   rw [show x ∈ 𝒪[L] ↔ x ∈ vL.v.valuationSubring by rfl,
+  --     (Valuation.isEquiv_iff_valuationSubring _ _).mp
+  --       (extension_valuation_equiv_extendedValuation_of_discrete (IsValExtension.val_isEquiv_comap (R := K) (A := L))),
+  --     ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, Subalgebra.mem_toSubring] at hx
+  --   rcases hx with ⟨p, hp⟩
+  --   refine ⟨p, hp.1, ?_⟩
+  --   ext
+  --   rw [show (0 : 𝒪[L]).val = 0 by rfl, ← hp.2]
+  --   calc
+  --     _ = 𝒪[L].subtype (eval₂ (algebraMap 𝒪[K] 𝒪[L]) ⟨x, hx⟩ p) := rfl
+  --     _ = _ := by
+  --       rw [Polynomial.hom_eval₂]
+  --       -- simp only [ValuationSubring.algebraMap_def]
+  --       congr
 
 set_option synthInstance.maxHeartbeats 0
-instance [CompleteSpace K] : IsIntegralClosure 𝒪[L] 𝒪[K] L := IsIntegralClosure.of_isIntegrallyClosed 𝒪[L] 𝒪[K] L
+instance : IsIntegralClosure 𝒪[L] 𝒪[K] L := IsIntegralClosure.of_isIntegrallyClosed 𝒪[L] 𝒪[K] L
 
 instance : IsDiscreteValuationRing 𝒪[K] :=
   inferInstanceAs (IsDiscreteValuationRing vK.v.valuationSubring)
@@ -112,8 +112,6 @@ open LocalField ExtDVR
 
 -- theorem integerAlgebra_integral_of_integral
 variable [Algebra.IsSeparable K L]
-instance : CompleteSpace K := sorry
-
 
 instance : Module.Finite ↥𝒪[K] ↥𝒪[L] := IsIntegralClosure.finite 𝒪[K] K L 𝒪[L]
 
