@@ -95,12 +95,20 @@ theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : 
       
       sorry
   }
+  have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
+  have h : f x = f (g x) := by
+    rw [spectralNorm_unique (f := f) _ hna, spectralAlgNorm_def hna, spectralAlgNorm_def hna, spectralNorm_eq_of_equiv]
+    unfold IsPowMul
+    intro a n hn
+    apply norm_pow a n
   have h1 : ‖x‖ = ‖g x‖ := by
-
-    sorry
+    unfold f at h
+    exact h
   apply le_antisymm
-  · sorry
-  · sorry
+  · apply Valued.toNormedField.norm_le_iff.1
+    apply le_of_eq h1
+  · apply Valued.toNormedField.norm_le_iff.1
+    apply le_of_eq h1.symm
 
 #check mem_decompositionGroup
 variable [CompleteSpace K]
