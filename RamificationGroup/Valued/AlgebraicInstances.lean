@@ -40,7 +40,11 @@ attribute [local instance 1001] Algebra.toSMul
 
 instance : IsScalarTower 𝒪[K] 𝒪[L] L := inferInstanceAs (IsScalarTower vK.v.integer vL.v.integer L)
 
-instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] := sorry
+instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
+  isIntegral := by
+    intro ⟨x, hx⟩
+    
+    sorry
   -- isIntegral := by
   --   intro ⟨x, hx⟩
   --   rw [show x ∈ 𝒪[L] ↔ x ∈ vL.v.valuationSubring by rfl,
