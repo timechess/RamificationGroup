@@ -8,6 +8,7 @@ import RamificationGroup.HerbrandFunction.Psi
 import RamificationGroup.ForMathlib.AlgEquiv.Basic
 import RamificationGroup.ForMathlib.Unknow
 import RamificationGroup.KroneckerWeber.IsInvariant
+import Mathlib.RingTheory.IntegralClosure.Algebra.Defs
 -- import RamificationGroup.Valued.Hom.Discrete'
 
 /-!
@@ -508,28 +509,58 @@ set_option maxHeartbeats 0
 instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := {
     isInvariant := by
       intro x hx
+      by_contra hc
+      push_neg at hc
+
       sorry
   }
 
+--exist already, need to update
+theorem algebraMap_isIntegral_iff{R : Type u_1} {A : Type u_3} [CommRing R] [Ring A] [Algebra R A] :
+(algebraMap R A).IsIntegral ↔ Algebra.IsIntegral R A := sorry
+
+#check IsLocalRing.maximalIdeal.isMaximal
+#check Ideal.isMaximal_comap_of_isIntegral_of_isMaximal'
 instance : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := {
     over := by
       unfold Ideal.under
-
-      sorry
+      apply le_antisymm
+      · apply Ideal.le_comap_of_map_le
+        apply IsLocalRing.le_maximalIdeal
+        by_contra hc
+        have hc' : IsLocalRing.maximalIdeal ↥𝒪[K'] = ⊤ := by
+          apply (Ideal.map_eq_top_iff _ _ _).1 hc
+          exact IsValExtension.integerAlgebra_injective K' L
+          apply algebraMap_isIntegral_iff.2
+          exact instIsIntegralSubtypeMemSubringIntegerWithZeroMultiplicativeIntOfCompleteSpace_ramificationGroup K' L
+        exact (IsLocalRing.maximalIdeal_ne_top ↥𝒪[K']) hc'
+      · apply IsLocalRing.le_maximalIdeal
+        exact Ideal.IsPrime.ne_top'
   }
 
--- instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) where
---   isSeparable' := by sorry
+variable [h : Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
+instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) := by
+  unfold IsLocalRing.ResidueField at h
+  refine {
+    isSeparable' := by
+      intro x
+      apply (h.isSeparable' x)
+  }
 
 variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
-  haveI : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) := sorry
   rw [← Algebra.IsInvariant.card_inertia (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
   simp only [decompositionGroup_eq_top, Subgroup.mem_top, neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, true_and, Subgroup.mem_mk, Set.mem_setOf_eq, Nat.card_eq_fintype_card, AddSubgroup.mem_inertia, AlgEquiv.smul_def, Submodule.mem_toAddSubgroup, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
-  apply Fintype.card_congr'
-
-  sorry
+  apply Fintype.card_congr
+  refine {
+    toFun x := by
+      constructor
+      repeat sorry
+    invFun x := sorry
+    left_inv := sorry
+    right_inv := sorry
+  }
   exact IsDiscreteValuationRing.not_a_field ↥𝒪[K']
 
 set_option maxHeartbeats 0
