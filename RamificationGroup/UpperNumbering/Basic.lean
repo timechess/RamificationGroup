@@ -532,7 +532,8 @@ instance : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalId
           apply (Ideal.map_eq_top_iff _ _ _).1 hc
           exact IsValExtension.integerAlgebra_injective K' L
           apply algebraMap_isIntegral_iff.2
-          exact instIsIntegralSubtypeMemSubringIntegerWithZeroMultiplicativeIntOfCompleteSpace_ramificationGroup K' L
+          exact
+            instIsIntegralSubtypeMemSubringIntegerWithZeroMultiplicativeInt_ramificationGroup K' L
         exact (IsLocalRing.maximalIdeal_ne_top ↥𝒪[K']) hc'
       · apply IsLocalRing.le_maximalIdeal
         exact Ideal.IsPrime.ne_top'
