@@ -80,6 +80,7 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
 
 #check spectralNorm_unique
 #check spectralNorm_eq_of_equiv
+#check Valuation.prolongs_by_ramificationIndex
 --------------------------------for lower
 variable [CompleteSpace K] in
 theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
@@ -94,8 +95,16 @@ theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : 
     smul' a x := by
       simp only [Algebra.smul_def, norm_mul]
       simp only [mul_eq_mul_right_iff, _root_.norm_eq_zero]
-      
-      sorry
+      by_cases hc : x = 0
+      · right
+        exact hc
+      · left
+        have h1 : ‖a‖ = Valued.norm a := rfl
+        have h2 : ‖(algebraMap K L a)‖ = Valued.norm (algebraMap K L a) := rfl
+        rw [h1, h2]
+        unfold Valued.norm
+        rw [← Valuation.prolongs_by_ramificationIndex]
+        repeat sorry
   }
   have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
   have h : f x = f (g x) := by

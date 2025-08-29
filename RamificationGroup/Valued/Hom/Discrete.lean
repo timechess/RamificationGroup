@@ -128,6 +128,7 @@ theorem extension_valuation_equiv_extendedValuation_of_discrete
   constructor
   · nth_rw 2 [← mem_valuationSubring_iff]
     rw [← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
+    intro hx
     
     sorry
   · rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
