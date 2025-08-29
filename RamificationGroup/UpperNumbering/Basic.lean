@@ -504,7 +504,7 @@ theorem lowerIndex_eq_inf (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ 
       apply le_of_lt hc
 
 
-set_option maxHeartbeats 0
+-- set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
 instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := {
     isInvariant := by
@@ -548,21 +548,60 @@ instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪
       apply (h.isSeparable' x)
   }
 
-variable [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
+instance : MulAction (L ≃ₐ[K'] L) ↥𝒪[L] where
+  smul a b := {
+    val := a b
+    property := by sorry
+  }
+  one_smul := by
+    intro b
+    rfl
+  mul_smul := by
+    intro x y b
+    rfl
+
+-- set_option maxHeartbeats 0
+#check Algebra.IsInvariant.card_inertia
+-- (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])
+variable [CompleteSpace K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
-  rw [← Algebra.IsInvariant.card_inertia (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])]
-  simp only [decompositionGroup_eq_top, Subgroup.mem_top, neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, true_and, Subgroup.mem_mk, Set.mem_setOf_eq, Nat.card_eq_fintype_card, AddSubgroup.mem_inertia, AlgEquiv.smul_def, Submodule.mem_toAddSubgroup, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
-  apply Fintype.card_congr
+  have : Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L]) = Nat.card ↥((Submodule.toAddSubgroup (IsLocalRing.maximalIdeal ↥𝒪[L])).inertia (L ≃ₐ[K'] L)) := by
+    symm
+    -- apply Algebra.IsInvariant.card_inertia
+    sorry
+  rw [this]
+  simp only [decompositionGroup_eq_top, Subgroup.mem_top, neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, true_and, Subgroup.mem_mk, Set.mem_setOf_eq, AddSubgroup.mem_inertia, AlgEquiv.smul_def, Submodule.mem_toAddSubgroup, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
+  apply Nat.card_congr
   refine {
     toFun x := by
+      refine ⟨x, ?_⟩
+      intro a b
+      rcases x with ⟨x, hx⟩
+      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v)]
+      by_contra hc
+      absurd hx
+      push_neg
+      use (⟨a, b⟩ : 𝒪[L])
       constructor
-      repeat sorry
-    invFun x := sorry
-    left_inv := sorry
-    right_inv := sorry
+      · exact b
+      · simp only [_root_.map_sub] at hc
+        have : (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) - (algebraMap 𝒪[L] L) ⟨a, b⟩ = x a - a := by
+          sorry
+        rw [this] at hc
+        simp only [hc, Left.inv_lt_one_iff]
+        exact Batteries.compareOfLessAndEq_eq_lt.mp rfl
+      exact integer.integers v
+    invFun x := by
+      rcases x with ⟨x, hx⟩
+      refine ⟨x, ?_⟩
+      intro a ha
+      
+      sorry
+    left_inv := congrFun rfl
+    right_inv := congrFun rfl
   }
-  exact IsDiscreteValuationRing.not_a_field ↥𝒪[K']
+
 
 set_option maxHeartbeats 0
 variable [Algebra.IsSeparable K K'] [Algebra.IsSeparable K' L][CompleteSpace K'] [Algebra.IsSeparable ↥𝒪[K'] ↥𝒪[L]] [Normal K' L] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
