@@ -118,6 +118,8 @@ theorem nontrivial_of_valuation_extension (h : vK.v.IsEquiv <| vL.comap (algebra
     decide
 
 
+instance : IsIntegralClosure (↥vL.integer) (↥𝒪[K]) L := sorry
+
 /-- If a valuation `v : L → ℤₘ₀` extends a discrete valuation on `K`, then `v` is equivalent to `extendedValuation K L`.-/
 theorem extension_valuation_equiv_extendedValuation_of_discrete
   (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) :
@@ -127,10 +129,15 @@ theorem extension_valuation_equiv_extendedValuation_of_discrete
   intro x
   constructor
   · nth_rw 2 [← mem_valuationSubring_iff]
-    rw [← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
+    rw [← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, Subalgebra.mem_toSubring]
     intro hx
-    
-    sorry
+    refine (mem_integralClosure_iff (↥v.valuationSubring) L).mpr ?_
+    simp only [valuationSubring]
+    have : IsIntegral vK.v.integer x := by
+      rw [IsIntegralClosure.isIntegral_iff (A := vL.integer) (R := 𝒪[K]) (B := L)]
+      use ⟨x, hx⟩
+      rfl
+    exact this
   · rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
     apply mem_integer_of_mem_integral_closure h
 
