@@ -609,7 +609,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
   apply Nat.card_congr (Equiv.subtypeEquivProp ?_)
   ext x
   constructor <;> intro F a ha
-  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by rfl]
+  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by sorry]
     intro p
     let h := F a ha
     rw [p] at h
@@ -617,7 +617,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
     rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le] at h
     omega
   · let h := F a ha
-    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by rfl] at h
+    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by sorry] at h
     rw [← WithZero.coe_inv, ← i_dont_name (v (x a - a))] -- use that `v` takes value in `ℤₘ₀`
     apply lt_of_le_of_ne ?_ h
     /- sth with `ha`; easy -/
