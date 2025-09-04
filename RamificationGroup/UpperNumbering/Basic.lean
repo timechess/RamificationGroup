@@ -517,44 +517,32 @@ theorem Val_AlgEquiv_eq' (g : L ≃ₐ[K'] L) {x : L} (hx : x ∈ vL.v.integer) 
 --   one_smul b := rfl
 --   mul_smul x y b := rfl
 
-instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] where
-  smul a b := {
-    val := a b
-    property := by
-      rw [mem_integer_iff, ← Val_AlgEquiv_eq', ← mem_integer_iff]
-      repeat exact b.2
-  }
-  one_smul b := rfl
-  mul_smul a b c := rfl
-  smul_zero a := by
-    simp only [(· • ·), ZeroMemClass.coe_zero, _root_.map_zero]; rfl
-  smul_add a b c := by
-    simp only [(· • ·), Subring.coe_add, _root_.map_add, AddMemClass.mk_add_mk]
-  smul_one a := by
-    simp only [(· • ·), OneMemClass.coe_one, _root_.map_one]; rfl
-  smul_mul a b c := by
-    simp only [(· • ·), Subring.coe_mul, _root_.map_mul, MulMemClass.mk_mul_mk]
+instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] := IsIntegralClosure.MulSemiringAction 𝒪[K'] K' L 𝒪[L]
 
 --exist already, need update
 theorem Valuation.HasExtension.val_algebraMap{R : Type u_1} {A : Type u_2} [CommRing R] [Ring A] [Algebra R A] {ΓR : Type*} {ΓA : Type*} [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA] {vR : Valuation R ΓR} {vA : Valuation A ΓA} [IsValExtension vR vA] (r : ↥vR.integer) :
 ↑((algebraMap ↥vR.integer ↥vA.integer) r) = (algebraMap R A) ↑r := sorry
 
-instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) where
-  smul_comm m n a := by
-    simp only [Algebra.smul_def']
-    simp only [(· • ·), SMul.smul, Subtype.mk.injEq, Subring.coe_mul, _root_.map_mul, show Algebra.algebraMap (R := 𝒪[K']) (A := 𝒪[L]) n = algebraMap K' L n by apply Valuation.HasExtension.val_algebraMap n, AlgEquiv.commutes' m, show m ((algebraMap K' L) ↑n) = (algebraMap K' L) ↑n by apply AlgEquiv.commutes' m]
-    rfl
+instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) := SMul.comp.smulCommClass ⇑(galRestrict (↥𝒪[K']) K' L ↥𝒪[L]).toMonoidHom
 
 -- set_option maxHeartbeats 0
-#check Algebra.IsInvariant.card_inertia
-instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) := {
-    isInvariant := by
-      intro x hx
-      by_contra hc
-      push_neg at hc
 
-      sorry
-  }
+#check Algebra.isInvariant_of_isGalois'
+#check Algebra.IsInvariant.card_inertia
+
+variable [Algebra.IsSeparable K' L] [Normal K' L] in
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) := by
+  have : IsGalois K' L := by constructor
+  have : IsIntegralClosure (↥𝒪[L]) (↥𝒪[K']) L := inferInstance
+  apply Algebra.isInvariant_of_isGalois' _ K' L _
+
+
+#check IsIntegralClosure.MulSemiringAction
+variable [Algebra.IsSeparable K' L] [Normal K' L] in
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) :=
+    haveI : IsGalois K' L := by constructor
+    Algebra.isInvariant_of_isGalois 𝒪[K'] K' L 𝒪[L]
+
 
 --exist already, need to update
 theorem algebraMap_isIntegral_iff{R : Type u_1} {A : Type u_3} [CommRing R] [Ring A] [Algebra R A] :
@@ -634,7 +622,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
       repeat exact ha
       push_neg
       apply le_of_lt (lt_of_le_of_lt ?_ hc)
-      
+
       sorry
       exact integer.integers v
     left_inv := congrFun rfl
