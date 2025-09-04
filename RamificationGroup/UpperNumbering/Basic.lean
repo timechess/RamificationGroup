@@ -536,8 +536,6 @@ instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (𝒪[L] ≃ₐ[𝒪[K
   have : IsIntegralClosure (↥𝒪[L]) (↥𝒪[K']) L := inferInstance
   apply Algebra.isInvariant_of_isGalois' _ K' L _
 
-
-#check IsIntegralClosure.MulSemiringAction
 variable [Algebra.IsSeparable K' L] [Normal K' L] in
 instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) :=
     haveI : IsGalois K' L := by constructor
@@ -603,7 +601,11 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
       use (⟨a, b⟩ : 𝒪[L])
       constructor
       · exact b
-      · rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) = x a by rfl] at hc
+      · have h : (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) = x a := by
+          rw [← AlgEquiv.smul_def]
+
+          sorry
+        rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, h ] at hc
         simp only [hc, Left.inv_lt_one_iff]
         decide
       exact integer.integers v
@@ -615,14 +617,13 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
       absurd hx
       push_neg at hc ⊢
       use a; use ha
-      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, _⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, _⟩) = x a by rfl]
+      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, _⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, _⟩) = x a by sorry]
       apply eq_of_le_of_not_lt
       apply (mem_integer_iff v (x a - a)).mp (Subring.sub_mem v.integer ?_ ha)
       rw [mem_integer_iff, ← Val_AlgEquiv_eq']
       repeat exact ha
       push_neg
       apply le_of_lt (lt_of_le_of_lt ?_ hc)
-
       sorry
       exact integer.integers v
     left_inv := congrFun rfl
