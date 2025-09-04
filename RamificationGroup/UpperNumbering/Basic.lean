@@ -590,6 +590,22 @@ instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪
       apply (h.isSeparable' x)
   }
 
+open WithZero in
+/-- To be moved to the right file-/
+theorem i_dont_name (x : ℤₘ₀) : x < 1 ↔ x <= (Multiplicative.ofAdd (1 : ℤ))⁻¹ := by
+  match x with
+  | 0 =>
+    simp only [zero_lt_one, coe_inv, zero_le']
+  | .coe (.ofAdd a) =>
+    constructor <;> intro h
+    · change (Multiplicative.ofAdd a) < (WithZero.coe (Multiplicative.ofAdd (0 : ℤ))) at h
+      rw [coe_lt_coe, Multiplicative.ofAdd_lt] at h
+      rw [coe_le_coe, show (Multiplicative.ofAdd 1)⁻¹ = (Multiplicative.ofAdd (-1)) by rfl, Multiplicative.ofAdd_le]
+      omega
+    · apply lt_of_le_of_lt h
+      decide
+
+
 -- set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
 -- (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])
@@ -602,20 +618,36 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
     sorry
   rw [this]
   simp only [decompositionGroup_eq_top, Subgroup.mem_top, neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, true_and, Subgroup.mem_mk, Set.mem_setOf_eq, AddSubgroup.mem_inertia, AlgEquiv.smul_def, Submodule.mem_toAddSubgroup, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff]
+  apply Nat.card_congr (Equiv.subtypeEquivProp ?_)
+  ext x
+  constructor <;> intro F a ha
+  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, ha⟩) = x a by rfl]
+    intro p
+    let h := F a ha
+    rw [p] at h
+    change (Multiplicative.ofAdd (0 : ℤ)) ≤ (WithZero.coe (Multiplicative.ofAdd (1 : ℤ)))⁻¹ at h
+    rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le] at h
+    omega
+  · let h := F a ha
+    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, ha⟩) = x a by rfl] at h
+    rw [← WithZero.coe_inv, ← i_dont_name (v (x a - a))] -- use that `v` takes value in `ℤₘ₀`
+    apply lt_of_le_of_ne ?_ h
+    /- sth with `ha`; easy -/
+    sorry
+  /-
   apply Nat.card_congr
   refine {
     toFun x := by
       refine ⟨x, ?_⟩
       intro a b
-      rcases x with ⟨x, hx⟩
       rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v)]
       by_contra hc
-      absurd hx
+      absurd x.2
       push_neg
       use (⟨a, b⟩ : 𝒪[L])
       constructor
       · exact b
-      · rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) = x a by rfl] at hc
+      · rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x.1 • ⟨a, b⟩) = x.1 a by rfl] at hc
         simp only [hc, Left.inv_lt_one_iff]
         decide
       exact integer.integers v
@@ -628,18 +660,21 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
       push_neg at hc ⊢
       use a; use ha
       rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, _⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, _⟩) = x a by rfl]
-      apply eq_of_le_of_not_lt
-      apply (mem_integer_iff v (x a - a)).mp (Subring.sub_mem v.integer ?_ ha)
-      rw [mem_integer_iff, ← Val_AlgEquiv_eq']
-      repeat exact ha
-      push_neg
-      apply le_of_lt (lt_of_le_of_lt ?_ hc)
-      
-      sorry
-      exact integer.integers v
+      · apply eq_of_le_of_not_lt
+        apply (mem_integer_iff v (x a - a)).mp (Subring.sub_mem v.integer ?_ ha)
+        rw [mem_integer_iff, ← Val_AlgEquiv_eq']
+        repeat exact ha
+        push_neg
+        apply le_of_lt (lt_of_le_of_lt ?_ hc)
+        change (Multiplicative.ofAdd (0 : ℤ)) ≤ (WithZero.coe (Multiplicative.ofAdd (1 : ℤ)))⁻¹
+        rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le]
+
+        sorry
+      · exact integer.integers v
     left_inv := congrFun rfl
     right_inv := congrFun rfl
   }
+  -/
 
 
 set_option maxHeartbeats 0

@@ -100,7 +100,7 @@ end Valuation
 namespace DiscreteValuation
 
 variable {K : Type*} [Field K]
-  {v v' : Valuation K ℤₘ₀} [IsDiscrete v] [IsDiscrete v']
+  {v v' : Valuation K ℤₘ₀}
 
 theorem pow_Uniformizer_all {x : K} (hx : x ≠ 0) (π : Uniformizer v) :
   ∃ n : ℤ, ∃ u : v.valuationSubringˣ, x = (π.1 : K) ^ n * u.1 := by
@@ -151,6 +151,8 @@ theorem val_pow_Uniformizer_all' {π : K} (hπ : IsUniformizer v π) {n : ℤ} {
   let ϖ := Uniformizer.mk' hπ
   rw [show π = ϖ.1 by exact rfl, val_pow_Uniformizer_all]
 
+variable [IsDiscrete v']
+
 /--If `π : K` is a uniformizer for `v`, and `v x ≤ 1 → v' x ≤ 1, ∀ x : K`, then `π` is also a uniformizer for `v'`.-/
 lemma isUniformizer_of_uniformizer_of_le_one_le_one (h : ∀{x : K}, v x ≤ 1 → v' x ≤ 1)
   (π : Uniformizer v) : IsUniformizer v' π.1 := by
@@ -174,6 +176,8 @@ theorem val_pow_Uniformizer_all_of_equiv (h : v.IsEquiv v') {π : Uniformizer v}
     rw [← (isEquiv_iff_val_eq_one).mp h, val_valuationSubring_unit]
   simp only [Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, inv_zpow', zpow_neg, this, mul_one, inv_inj,
     ← WithZero.coe_zpow, ← ofAdd_zsmul, smul_eq_mul, mul_one] -- `WithZero.coe_zpow` should be tagged with @[norm_cast], but it is not.
+
+variable [IsDiscrete v]
 
 theorem lt_one_lt_one_of_le_one_le_one (h : ∀{x : K}, v x ≤ 1 → v' x ≤ 1) {x : K} (hx : v x < 1) : v' x < 1 := by
   by_cases xne0 : x = 0
