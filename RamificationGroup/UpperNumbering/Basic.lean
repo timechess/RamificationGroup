@@ -536,8 +536,6 @@ instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (𝒪[L] ≃ₐ[𝒪[K
   have : IsIntegralClosure (↥𝒪[L]) (↥𝒪[K']) L := inferInstance
   apply Algebra.isInvariant_of_isGalois' _ K' L _
 
-
-#check IsIntegralClosure.MulSemiringAction
 variable [Algebra.IsSeparable K' L] [Normal K' L] in
 instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) :=
     haveI : IsGalois K' L := by constructor
