@@ -504,9 +504,50 @@ theorem lowerIndex_eq_inf (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ 
       apply le_of_lt hc
 
 
+theorem Val_AlgEquiv_eq' (g : L ≃ₐ[K'] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by sorry
+
+
+-- instance : MulAction (L ≃ₐ[K'] L) ↥𝒪[L] where
+--   smul a b := {
+--     val := a b
+--     property := by
+--       rw [mem_integer_iff, ← Val_AlgEquiv_eq', ← mem_integer_iff]
+--       repeat exact b.2
+--   }
+--   one_smul b := rfl
+--   mul_smul x y b := rfl
+
+instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] where
+  smul a b := {
+    val := a b
+    property := by
+      rw [mem_integer_iff, ← Val_AlgEquiv_eq', ← mem_integer_iff]
+      repeat exact b.2
+  }
+  one_smul b := rfl
+  mul_smul a b c := rfl
+  smul_zero a := by
+    simp only [(· • ·), ZeroMemClass.coe_zero, _root_.map_zero]; rfl
+  smul_add a b c := by
+    simp only [(· • ·), Subring.coe_add, _root_.map_add, AddMemClass.mk_add_mk]
+  smul_one a := by
+    simp only [(· • ·), OneMemClass.coe_one, _root_.map_one]; rfl
+  smul_mul a b c := by
+    simp only [(· • ·), Subring.coe_mul, _root_.map_mul, MulMemClass.mk_mul_mk]
+
+--exist already, need update
+theorem Valuation.HasExtension.val_algebraMap{R : Type u_1} {A : Type u_2} [CommRing R] [Ring A] [Algebra R A] {ΓR : Type*} {ΓA : Type*} [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA] {vR : Valuation R ΓR} {vA : Valuation A ΓA} [IsValExtension vR vA] (r : ↥vR.integer) :
+↑((algebraMap ↥vR.integer ↥vA.integer) r) = (algebraMap R A) ↑r := sorry
+
+instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) where
+  smul_comm m n a := by
+    simp only [Algebra.smul_def']
+    simp only [(· • ·), SMul.smul, Subtype.mk.injEq, Subring.coe_mul, _root_.map_mul, show Algebra.algebraMap (R := 𝒪[K']) (A := 𝒪[L]) n = algebraMap K' L n by apply Valuation.HasExtension.val_algebraMap n, AlgEquiv.commutes' m, show m ((algebraMap K' L) ↑n) = (algebraMap K' L) ↑n by apply AlgEquiv.commutes' m]
+    rfl
+
 -- set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
-instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (↥𝒪[L] ≃ₐ[↥𝒪[K']] ↥𝒪[L]) := {
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) := {
     isInvariant := by
       intro x hx
       by_contra hc
@@ -521,7 +562,7 @@ theorem algebraMap_isIntegral_iff{R : Type u_1} {A : Type u_3} [CommRing R] [Rin
 
 #check IsLocalRing.maximalIdeal.isMaximal
 #check Ideal.isMaximal_comap_of_isIntegral_of_isMaximal'
-instance : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := {
+instance [CompleteSpace K'] : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalIdeal ↥𝒪[K']) := {
     over := by
       unfold Ideal.under
       apply le_antisymm
@@ -533,13 +574,14 @@ instance : (IsLocalRing.maximalIdeal ↥𝒪[L]).LiesOver (IsLocalRing.maximalId
           exact IsValExtension.integerAlgebra_injective K' L
           apply algebraMap_isIntegral_iff.2
           exact
-            instIsIntegralSubtypeMemSubringIntegerWithZeroMultiplicativeInt_ramificationGroup K' L
+            instIsIntegralSubtypeMemSubringIntegerWithZeroMultiplicativeIntOfCompleteSpace_ramificationGroup
+              K' L
         exact (IsLocalRing.maximalIdeal_ne_top ↥𝒪[K']) hc'
       · apply IsLocalRing.le_maximalIdeal
         exact Ideal.IsPrime.ne_top'
   }
 
-variable [h : Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
+variable [h : Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [CompleteSpace K'] in
 instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪[K']) (↥𝒪[L] ⧸ IsLocalRing.maximalIdeal ↥𝒪[L]) := by
   unfold IsLocalRing.ResidueField at h
   refine {
@@ -547,18 +589,6 @@ instance : Algebra.IsSeparable (↥𝒪[K'] ⧸ IsLocalRing.maximalIdeal ↥𝒪
       intro x
       apply (h.isSeparable' x)
   }
-
-instance : MulAction (L ≃ₐ[K'] L) ↥𝒪[L] where
-  smul a b := {
-    val := a b
-    property := by sorry
-  }
-  one_smul := by
-    intro b
-    rfl
-  mul_smul := by
-    intro x y b
-    rfl
 
 -- set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
@@ -585,19 +615,28 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
       use (⟨a, b⟩ : 𝒪[L])
       constructor
       · exact b
-      · simp only [_root_.map_sub] at hc
-        have : (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) - (algebraMap 𝒪[L] L) ⟨a, b⟩ = x a - a := by
-          sorry
-        rw [this] at hc
+      · rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, b⟩) = x a by rfl] at hc
         simp only [hc, Left.inv_lt_one_iff]
-        exact Batteries.compareOfLessAndEq_eq_lt.mp rfl
+        decide
       exact integer.integers v
     invFun x := by
       rcases x with ⟨x, hx⟩
       refine ⟨x, ?_⟩
       intro a ha
+      by_contra hc
+      absurd hx
+      push_neg at hc ⊢
+      use a; use ha
+      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, _⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, _⟩) = x a by rfl]
+      apply eq_of_le_of_not_lt
+      apply (mem_integer_iff v (x a - a)).mp (Subring.sub_mem v.integer ?_ ha)
+      rw [mem_integer_iff, ← Val_AlgEquiv_eq']
+      repeat exact ha
+      push_neg
+      apply le_of_lt (lt_of_le_of_lt ?_ hc)
       
       sorry
+      exact integer.integers v
     left_inv := congrFun rfl
     right_inv := congrFun rfl
   }

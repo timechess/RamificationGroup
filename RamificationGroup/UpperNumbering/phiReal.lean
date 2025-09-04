@@ -77,13 +77,33 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
   apply Nat.cast_nonneg
   apply Nat.cast_nonneg
 
-
+#check IsUltrametricDist
 #check spectralNorm_unique
 #check spectralNorm_eq_of_equiv
 #check Valuation.prolongs_by_ramificationIndex
---------------------------------for lower
+#check NormedAlgebra
+-- instance : NormedAlgebra K L where
+--   smul a x := a • x
+--   algebraMap := algebraMap K L
+--   commutes' a b := Algebra.commutes a b
+--   smul_def' a b := Algebra.smul_def a b
+--   norm_smul_le a b := by sorry
+-- --------------------------------for lower
+
+-- lemma norm_eq_iff {X : Type*} (N N' : NormedField X) {x y : X} : (letI := N; ‖x‖ = ‖y‖) ↔ (letI := N'; ‖x‖ = ‖y‖) := by
+--   constructor <;> intro h
+--   · sorry
+--   · sorry
+
+
+open NormedField
 variable [CompleteSpace K] in
 theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+  -- have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
+  -- suffices ‖x‖ = ‖g x‖ by
+  --   simpa [le_antisymm_iff] using this
+  -- exact (norm_eq_iff _ (spectralNorm.normedField hna)).mpr (spectralNorm_eq_of_equiv g _)
+
   let f : AlgebraNorm K L := {
     toFun x := ‖x‖
     map_zero' := norm_zero
@@ -303,7 +323,7 @@ theorem Ideal.map_maximalIdeal_le_maximalIdeal : Ideal.map (algebraMap ↥𝒪[K
   exact hx
 
 
-variable [IsScalarTower 𝒪[K] 𝒪[K'] 𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] in
+variable [IsScalarTower 𝒪[K] 𝒪[K'] 𝒪[L]] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K]) (IsLocalRing.ResidueField ↥𝒪[K'])] [CompleteSpace K'] in
 theorem RamificationGroup_card_zero_comp_aux : (Nat.card G(K'/K)_[0] : ℝ) * (Nat.card G(L/K')_[0] : ℝ) = (Nat.card G(L/K)_[0] : ℝ) := by
   repeat rw [RamificationIdx_eq_card_of_inertia_group]
   norm_cast

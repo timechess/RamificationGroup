@@ -40,30 +40,63 @@ attribute [local instance 1001] Algebra.toSMul
 
 instance : IsScalarTower 𝒪[K] 𝒪[L] L := inferInstanceAs (IsScalarTower vK.v.integer vL.v.integer L)
 
-instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
+-- #check Polynomial.eval
+-- #check Polynomial.coeff_eq_esymm_roots_of_splits
+-- #check Polynomial.coeff_eq_esymm_roots_of_card
+-- #check IsIntegrallyClosed
+-- instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
+--   isIntegral := by
+--     intro ⟨x, hx⟩
+--     let f := minpoly K x
+--     have hc : ∀ n ∈ f.support, (f.coeff n) ∈ 𝒪[K] := by
+--       intro n hn
+--       rw [Polynomial.coeff_eq_esymm_roots_of_splits, minpoly.monic, one_mul]
+--       apply Subring.mul_mem
+--       · exact Subring.pow_mem 𝒪[K] (Subring.neg_mem 𝒪[K] (Subring.one_mem 𝒪[K])) (f.natDegree - n)
+--       · rw [Multiset.esymm]
+--         apply Subring.multiset_sum_mem
+--         intro a ha
+--         simp only [Multiset.mem_map, Multiset.mem_powersetCard] at ha
+--         rcases ha with ⟨b, ⟨hb1, hb2⟩, hb3⟩
+--         rw [← hb3]
+--         apply Subring.multiset_prod_mem
+--         intro a ha
+--         have ha1 : a ∈ f.roots := Multiset.mem_of_le hb1 ha
+
+--         sorry
+--       exact Algebra.IsIntegral.isIntegral x
+--       sorry
+--       exact le_natDegree_of_mem_supp n hn
+--     let g : 𝒪[K][X] := ∑ n : f.support, (C (⟨f.coeff n, hc n.1 n.2⟩ : 𝒪[K])) * X ^ n.1
+--     use g
+--     constructor
+--     · simp only [g, Monic, leadingCoeff]
+--       sorry
+--     · simp only [g, eval₂, SubmonoidClass.mk_pow, sum]
+--       #check Polynomial.as_sum_support
+--       sorry
+
+
+instance [CompleteSpace K] : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
   isIntegral := by
     intro ⟨x, hx⟩
-    
-    sorry
-  -- isIntegral := by
-  --   intro ⟨x, hx⟩
-  --   rw [show x ∈ 𝒪[L] ↔ x ∈ vL.v.valuationSubring by rfl,
-  --     (Valuation.isEquiv_iff_valuationSubring _ _).mp
-  --       (extension_valuation_equiv_extendedValuation_of_discrete (IsValExtension.val_isEquiv_comap (R := K) (A := L))),
-  --     ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, Subalgebra.mem_toSubring] at hx
-  --   rcases hx with ⟨p, hp⟩
-  --   refine ⟨p, hp.1, ?_⟩
-  --   ext
-  --   rw [show (0 : 𝒪[L]).val = 0 by rfl, ← hp.2]
-  --   calc
-  --     _ = 𝒪[L].subtype (eval₂ (algebraMap 𝒪[K] 𝒪[L]) ⟨x, hx⟩ p) := rfl
-  --     _ = _ := by
-  --       rw [Polynomial.hom_eval₂]
-  --       -- simp only [ValuationSubring.algebraMap_def]
-  --       congr
+    rw [show x ∈ 𝒪[L] ↔ x ∈ vL.v.valuationSubring by rfl,
+      (Valuation.isEquiv_iff_valuationSubring _ _).mp
+        (extension_valuation_equiv_extendedValuation_of_discrete (IsValExtension.val_isEquiv_comap (R := K) (A := L))),
+      ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer, Subalgebra.mem_toSubring] at hx
+    rcases hx with ⟨p, hp⟩
+    refine ⟨p, hp.1, ?_⟩
+    ext
+    rw [show (0 : 𝒪[L]).val = 0 by rfl, ← hp.2]
+    calc
+      _ = 𝒪[L].subtype (eval₂ (algebraMap 𝒪[K] 𝒪[L]) ⟨x, hx⟩ p) := rfl
+      _ = _ := by
+        rw [Polynomial.hom_eval₂]
+        -- simp only [ValuationSubring.algebraMap_def]
+        congr
 
 set_option synthInstance.maxHeartbeats 0
-instance : IsIntegralClosure 𝒪[L] 𝒪[K] L := IsIntegralClosure.of_isIntegrallyClosed 𝒪[L] 𝒪[K] L
+instance [CompleteSpace K] : IsIntegralClosure 𝒪[L] 𝒪[K] L := IsIntegralClosure.of_isIntegrallyClosed 𝒪[L] 𝒪[K] L
 
 instance : IsDiscreteValuationRing 𝒪[K] :=
   inferInstanceAs (IsDiscreteValuationRing vK.v.valuationSubring)
@@ -117,7 +150,7 @@ open LocalField ExtDVR
 -- theorem integerAlgebra_integral_of_integral
 variable [Algebra.IsSeparable K L]
 
-instance : Module.Finite ↥𝒪[K] ↥𝒪[L] := IsIntegralClosure.finite 𝒪[K] K L 𝒪[L]
+instance [CompleteSpace K] : Module.Finite ↥𝒪[K] ↥𝒪[L] := IsIntegralClosure.finite 𝒪[K] K L 𝒪[L]
 
 #check exists_isUniformizer_of_isDiscrete
 set_option synthInstance.maxHeartbeats 0
