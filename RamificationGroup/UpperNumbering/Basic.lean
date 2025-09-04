@@ -517,44 +517,32 @@ theorem Val_AlgEquiv_eq' (g : L ≃ₐ[K'] L) {x : L} (hx : x ∈ vL.v.integer) 
 --   one_smul b := rfl
 --   mul_smul x y b := rfl
 
-instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] where
-  smul a b := {
-    val := a b
-    property := by
-      rw [mem_integer_iff, ← Val_AlgEquiv_eq', ← mem_integer_iff]
-      repeat exact b.2
-  }
-  one_smul b := rfl
-  mul_smul a b c := rfl
-  smul_zero a := by
-    simp only [(· • ·), ZeroMemClass.coe_zero, _root_.map_zero]; rfl
-  smul_add a b c := by
-    simp only [(· • ·), Subring.coe_add, _root_.map_add, AddMemClass.mk_add_mk]
-  smul_one a := by
-    simp only [(· • ·), OneMemClass.coe_one, _root_.map_one]; rfl
-  smul_mul a b c := by
-    simp only [(· • ·), Subring.coe_mul, _root_.map_mul, MulMemClass.mk_mul_mk]
+instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] := IsIntegralClosure.MulSemiringAction 𝒪[K'] K' L 𝒪[L]
 
 --exist already, need update
 theorem Valuation.HasExtension.val_algebraMap{R : Type u_1} {A : Type u_2} [CommRing R] [Ring A] [Algebra R A] {ΓR : Type*} {ΓA : Type*} [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA] {vR : Valuation R ΓR} {vA : Valuation A ΓA} [IsValExtension vR vA] (r : ↥vR.integer) :
 ↑((algebraMap ↥vR.integer ↥vA.integer) r) = (algebraMap R A) ↑r := sorry
 
-instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) where
-  smul_comm m n a := by
-    simp only [Algebra.smul_def']
-    simp only [(· • ·), SMul.smul, Subtype.mk.injEq, Subring.coe_mul, _root_.map_mul, show Algebra.algebraMap (R := 𝒪[K']) (A := 𝒪[L]) n = algebraMap K' L n by apply Valuation.HasExtension.val_algebraMap n, AlgEquiv.commutes' m, show m ((algebraMap K' L) ↑n) = (algebraMap K' L) ↑n by apply AlgEquiv.commutes' m]
-    rfl
+instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) := SMul.comp.smulCommClass ⇑(galRestrict (↥𝒪[K']) K' L ↥𝒪[L]).toMonoidHom
 
 -- set_option maxHeartbeats 0
-#check Algebra.IsInvariant.card_inertia
-instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) := {
-    isInvariant := by
-      intro x hx
-      by_contra hc
-      push_neg at hc
 
-      sorry
-  }
+#check Algebra.isInvariant_of_isGalois'
+#check Algebra.IsInvariant.card_inertia
+
+variable [Algebra.IsSeparable K' L] [Normal K' L] in
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) := by
+  have : IsGalois K' L := by constructor
+  have : IsIntegralClosure (↥𝒪[L]) (↥𝒪[K']) L := inferInstance
+  apply Algebra.isInvariant_of_isGalois' _ K' L _
+
+
+#check IsIntegralClosure.MulSemiringAction
+variable [Algebra.IsSeparable K' L] [Normal K' L] in
+instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) :=
+    haveI : IsGalois K' L := by constructor
+    Algebra.isInvariant_of_isGalois 𝒪[K'] K' L 𝒪[L]
+
 
 --exist already, need to update
 theorem algebraMap_isIntegral_iff{R : Type u_1} {A : Type u_3} [CommRing R] [Ring A] [Algebra R A] :
@@ -621,7 +609,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
   apply Nat.card_congr (Equiv.subtypeEquivProp ?_)
   ext x
   constructor <;> intro F a ha
-  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, ha⟩) = x a by rfl]
+  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by rfl]
     intro p
     let h := F a ha
     rw [p] at h
@@ -629,52 +617,11 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
     rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le] at h
     omega
   · let h := F a ha
-    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, ha⟩) = x a by rfl] at h
+    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by rfl] at h
     rw [← WithZero.coe_inv, ← i_dont_name (v (x a - a))] -- use that `v` takes value in `ℤₘ₀`
     apply lt_of_le_of_ne ?_ h
     /- sth with `ha`; easy -/
     sorry
-  /-
-  apply Nat.card_congr
-  refine {
-    toFun x := by
-      refine ⟨x, ?_⟩
-      intro a b
-      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v)]
-      by_contra hc
-      absurd x.2
-      push_neg
-      use (⟨a, b⟩ : 𝒪[L])
-      constructor
-      · exact b
-      · rw [_root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, b⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x.1 • ⟨a, b⟩) = x.1 a by rfl] at hc
-        simp only [hc, Left.inv_lt_one_iff]
-        decide
-      exact integer.integers v
-    invFun x := by
-      rcases x with ⟨x, hx⟩
-      refine ⟨x, ?_⟩
-      intro a ha
-      by_contra hc
-      absurd hx
-      push_neg at hc ⊢
-      use a; use ha
-      rw [Valuation.Integers.isUnit_iff_valuation_eq_one (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, _⟩ = a by rfl, show (algebraMap (↥𝒪[L]) L) (x • ⟨a, _⟩) = x a by rfl]
-      · apply eq_of_le_of_not_lt
-        apply (mem_integer_iff v (x a - a)).mp (Subring.sub_mem v.integer ?_ ha)
-        rw [mem_integer_iff, ← Val_AlgEquiv_eq']
-        repeat exact ha
-        push_neg
-        apply le_of_lt (lt_of_le_of_lt ?_ hc)
-        change (Multiplicative.ofAdd (0 : ℤ)) ≤ (WithZero.coe (Multiplicative.ofAdd (1 : ℤ)))⁻¹
-        rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le]
-
-        sorry
-      · exact integer.integers v
-    left_inv := congrFun rfl
-    right_inv := congrFun rfl
-  }
-  -/
 
 
 set_option maxHeartbeats 0
