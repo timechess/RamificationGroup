@@ -595,7 +595,7 @@ theorem i_dont_name (x : ℤₘ₀) : x < 1 ↔ x <= (Multiplicative.ofAdd (1 : 
 -- set_option maxHeartbeats 0
 #check Algebra.IsInvariant.card_inertia
 -- (𝒪[L] ≃ₐ[𝒪[K']] 𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) _ (IsLocalRing.maximalIdeal ↥𝒪[L])
-variable [CompleteSpace K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] in
+variable [CompleteSpace K'] [Algebra.IsSeparable (IsLocalRing.ResidueField ↥𝒪[K']) (IsLocalRing.ResidueField ↥𝒪[L])] [FiniteDimensional K' L] in
 theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (LocalField.ramificationIdx K' L) := by
   simp only [lowerRamificationGroup, LocalField.ramificationIdx, IsLocalRing.ramificationIdx]
   have : Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L]) = Nat.card ↥((Submodule.toAddSubgroup (IsLocalRing.maximalIdeal ↥𝒪[L])).inertia (L ≃ₐ[K'] L)) := by
@@ -607,7 +607,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
   apply Nat.card_congr (Equiv.subtypeEquivProp ?_)
   ext x
   constructor <;> intro F a ha
-  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by sorry]
+  · rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show x • ⟨a, ha⟩ = ((galRestrict 𝒪[K'] K' L 𝒪[L]) x) ⟨a, ha⟩ by rfl, algebraMap_galRestrict_apply, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl]
     intro p
     let h := F a ha
     rw [p] at h
@@ -615,11 +615,14 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
     rw [← WithZero.coe_inv, WithZero.coe_le_coe, le_inv', ofAdd_zero, inv_one, ← ofAdd_zero, Multiplicative.ofAdd_le] at h
     omega
   · let h := F a ha
-    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show (algebraMap 𝒪[L] L) (x • ⟨a, ha⟩) = x a by sorry] at h
+    rw [Valuation.Integers.isUnit_iff_valuation_eq_one (integer.integers v) (F := L) (v := vL.v), _root_.map_sub, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl, show x • ⟨a, ha⟩ = ((galRestrict 𝒪[K'] K' L 𝒪[L]) x) ⟨a, ha⟩ by rfl, algebraMap_galRestrict_apply, show (algebraMap 𝒪[L] L) ⟨a, ha⟩ = a by rfl] at h
     rw [← WithZero.coe_inv, ← i_dont_name (v (x a - a))] -- use that `v` takes value in `ℤₘ₀`
     apply lt_of_le_of_ne ?_ h
     /- sth with `ha`; easy -/
-    sorry
+    rw [← mem_integer_iff]
+    refine sub_mem ?_ ha
+    rw [mem_integer_iff, ← Val_AlgEquiv_eq' x ha]
+    exact ha
 
 
 set_option maxHeartbeats 0
