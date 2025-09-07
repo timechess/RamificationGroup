@@ -95,51 +95,65 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
 --   · sorry
 --   · sorry
 
+instance Valuation.IsDiscrete_comap (g : L ≃ₐ[K] L) : (Valuation.comap (R := L) g v).IsDiscrete (A := L) where
+  one_mem_range := by
+    obtain ⟨x, hx⟩ := IsDiscrete.one_mem_range (v := vL.v)
+    simp only [Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Set.mem_range, comap_apply, RingHom.coe_coe]
+    use g⁻¹ x
+    rw [show g (g⁻¹ x) = x from (eq_symm_apply g).mp rfl]
+    exact hx
+
 
 open NormedField
 variable [CompleteSpace K] in
 theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+  have h := algHom_preserve_val_of_complete (K := K) (L := L) g
+  rw [show vL.v (g x) = (vL.v.comap g) x by rfl]
+  exact DFunLike.congr (isEquiv_iff_eq.mp h) rfl
+
+
+
   -- have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
   -- suffices ‖x‖ = ‖g x‖ by
   --   simpa [le_antisymm_iff] using this
   -- exact (norm_eq_iff _ (spectralNorm.normedField hna)).mpr (spectralNorm_eq_of_equiv g _)
 
-  let f : AlgebraNorm K L := {
-    toFun x := ‖x‖
-    map_zero' := norm_zero
-    add_le' r s :=  _root_.norm_add_le r s
-    neg' r := norm_neg r
-    mul_le' x y := norm_mul_le x y
-    eq_zero_of_map_eq_zero' x := by
-      simp only [_root_.norm_eq_zero, imp_self]
-    smul' a x := by
-      simp only [Algebra.smul_def, norm_mul]
-      simp only [mul_eq_mul_right_iff, _root_.norm_eq_zero]
-      by_cases hc : x = 0
-      · right
-        exact hc
-      · left
-        have h1 : ‖a‖ = Valued.norm a := rfl
-        have h2 : ‖(algebraMap K L a)‖ = Valued.norm (algebraMap K L a) := rfl
-        rw [h1, h2]
-        unfold Valued.norm
-        rw [← Valuation.prolongs_by_ramificationIndex]
-        repeat sorry
-  }
-  have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
-  have h : f x = f (g x) := by
-    rw [spectralNorm_unique (f := f) _ hna, spectralAlgNorm_def hna, spectralAlgNorm_def hna, spectralNorm_eq_of_equiv]
-    unfold IsPowMul
-    intro a n hn
-    apply norm_pow a n
-  have h1 : ‖x‖ = ‖g x‖ := by
-    unfold f at h
-    exact h
-  apply le_antisymm
-  · apply Valued.toNormedField.norm_le_iff.1
-    apply le_of_eq h1
-  · apply Valued.toNormedField.norm_le_iff.1
-    apply le_of_eq h1.symm
+  -- let f : AlgebraNorm K L := {
+  --   toFun x := ‖x‖
+  --   map_zero' := norm_zero
+  --   add_le' r s :=  _root_.norm_add_le r s
+  --   neg' r := norm_neg r
+  --   mul_le' x y := norm_mul_le x y
+  --   eq_zero_of_map_eq_zero' x := by
+  --     simp only [_root_.norm_eq_zero, imp_self]
+  --   smul' a x := by
+  --     simp only [Algebra.smul_def, norm_mul]
+  --     simp only [mul_eq_mul_right_iff, _root_.norm_eq_zero]
+  --     by_cases hc : x = 0
+  --     · right
+  --       exact hc
+  --     · left
+  --       have h1 : ‖a‖ = Valued.norm a := rfl
+  --       have h2 : ‖(algebraMap K L a)‖ = Valued.norm (algebraMap K L a) := rfl
+  --       rw [h1, h2]
+  --       unfold Valued.norm
+  --       rw [← Valuation.prolongs_by_ramificationIndex]
+  --       repeat sorry
+  -- }
+  -- have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
+  -- have h : f x = f (g x) := by
+  --   rw [spectralNorm_unique (f := f) _ hna, spectralAlgNorm_def hna, spectralAlgNorm_def hna, spectralNorm_eq_of_equiv]
+  --   unfold IsPowMul
+  --   intro a n hn
+  --   apply norm_pow a n
+  -- have h1 : ‖x‖ = ‖g x‖ := by
+  --   unfold f at h
+  --   exact h
+  -- apply le_antisymm
+  -- · apply Valued.toNormedField.norm_le_iff.1
+  --   apply le_of_eq h1
+  -- · apply Valued.toNormedField.norm_le_iff.1
+  --   apply le_of_eq h1.symm
 
 #check mem_decompositionGroup
 variable [CompleteSpace K]
