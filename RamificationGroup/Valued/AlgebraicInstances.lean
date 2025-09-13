@@ -40,42 +40,6 @@ attribute [local instance 1001] Algebra.toSMul
 
 instance : IsScalarTower 𝒪[K] 𝒪[L] L := inferInstanceAs (IsScalarTower vK.v.integer vL.v.integer L)
 
--- #check Polynomial.eval
--- #check Polynomial.coeff_eq_esymm_roots_of_splits
--- #check Polynomial.coeff_eq_esymm_roots_of_card
--- #check IsIntegrallyClosed
--- instance : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
---   isIntegral := by
---     intro ⟨x, hx⟩
---     let f := minpoly K x
---     have hc : ∀ n ∈ f.support, (f.coeff n) ∈ 𝒪[K] := by
---       intro n hn
---       rw [Polynomial.coeff_eq_esymm_roots_of_splits, minpoly.monic, one_mul]
---       apply Subring.mul_mem
---       · exact Subring.pow_mem 𝒪[K] (Subring.neg_mem 𝒪[K] (Subring.one_mem 𝒪[K])) (f.natDegree - n)
---       · rw [Multiset.esymm]
---         apply Subring.multiset_sum_mem
---         intro a ha
---         simp only [Multiset.mem_map, Multiset.mem_powersetCard] at ha
---         rcases ha with ⟨b, ⟨hb1, hb2⟩, hb3⟩
---         rw [← hb3]
---         apply Subring.multiset_prod_mem
---         intro a ha
---         have ha1 : a ∈ f.roots := Multiset.mem_of_le hb1 ha
-
---         sorry
---       exact Algebra.IsIntegral.isIntegral x
---       sorry
---       exact le_natDegree_of_mem_supp n hn
---     let g : 𝒪[K][X] := ∑ n : f.support, (C (⟨f.coeff n, hc n.1 n.2⟩ : 𝒪[K])) * X ^ n.1
---     use g
---     constructor
---     · simp only [g, Monic, leadingCoeff]
---       sorry
---     · simp only [g, eval₂, SubmonoidClass.mk_pow, sum]
---       #check Polynomial.as_sum_support
---       sorry
-
 
 instance [CompleteSpace K] : Algebra.IsIntegral 𝒪[K] 𝒪[L] where
   isIntegral := by

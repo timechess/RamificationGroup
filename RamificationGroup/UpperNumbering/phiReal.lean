@@ -16,6 +16,7 @@ noncomputable def phiDerivReal (u : ℝ) : ℝ :=
 
 noncomputable def phiReal (u : Real) : Real := ∫ x in (0 : ℝ)..u, phiDerivReal K L x ∂μ
 
+#check Valuation.IsEquiv
 theorem phiReal_zero_eq_zero : phiReal K L 0 = 0 := by
   unfold phiReal
   simp only [intervalIntegral.integral_same]
@@ -82,78 +83,23 @@ theorem phiReal_nonneg {u : ℝ} (h : 0 ≤ u) : 0 ≤ phiReal K L u := by
 #check spectralNorm_eq_of_equiv
 #check Valuation.prolongs_by_ramificationIndex
 #check NormedAlgebra
--- instance : NormedAlgebra K L where
---   smul a x := a • x
---   algebraMap := algebraMap K L
---   commutes' a b := Algebra.commutes a b
---   smul_def' a b := Algebra.smul_def a b
---   norm_smul_le a b := by sorry
--- --------------------------------for lower
 
--- lemma norm_eq_iff {X : Type*} (N N' : NormedField X) {x y : X} : (letI := N; ‖x‖ = ‖y‖) ↔ (letI := N'; ‖x‖ = ‖y‖) := by
---   constructor <;> intro h
---   · sorry
---   · sorry
-
-instance Valuation.IsDiscrete_comap (g : L ≃ₐ[K] L) : (Valuation.comap (R := L) g v).IsDiscrete (A := L) where
-  one_mem_range := by
-    obtain ⟨x, hx⟩ := IsDiscrete.one_mem_range (v := vL.v)
-    simp only [Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Set.mem_range, comap_apply, RingHom.coe_coe]
-    use g⁻¹ x
-    rw [show g (g⁻¹ x) = x from (eq_symm_apply g).mp rfl]
-    exact hx
+-- instance Valuation.IsDiscrete_comap (g : L ≃ₐ[K] L) : (Valuation.comap (R := L) g v).IsDiscrete (A := L) where
+--   one_mem_range := by
+--     obtain ⟨x, hx⟩ := IsDiscrete.one_mem_range (v := vL.v)
+--     simp only [Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Set.mem_range, comap_apply, RingHom.coe_coe]
+--     use g⁻¹ x
+--     rw [show g (g⁻¹ x) = x from (eq_symm_apply g).mp rfl]
+--     exact hx
 
 
-open NormedField
-variable [CompleteSpace K] in
-theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
-  have h := algHom_preserve_val_of_complete (K := K) (L := L) g
-  rw [show vL.v (g x) = (vL.v.comap g) x by rfl]
-  exact DFunLike.congr (isEquiv_iff_eq.mp h) rfl
+-- open NormedField
+-- variable [CompleteSpace K] in
+-- theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+--   have h := algHom_preserve_val_of_complete (K := K) (L := L) g
+--   rw [show vL.v (g x) = (vL.v.comap g) x by rfl]
+--   exact DFunLike.congr (isEquiv_iff_eq.mp h) rfl
 
-
-
-  -- have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
-  -- suffices ‖x‖ = ‖g x‖ by
-  --   simpa [le_antisymm_iff] using this
-  -- exact (norm_eq_iff _ (spectralNorm.normedField hna)).mpr (spectralNorm_eq_of_equiv g _)
-
-  -- let f : AlgebraNorm K L := {
-  --   toFun x := ‖x‖
-  --   map_zero' := norm_zero
-  --   add_le' r s :=  _root_.norm_add_le r s
-  --   neg' r := norm_neg r
-  --   mul_le' x y := norm_mul_le x y
-  --   eq_zero_of_map_eq_zero' x := by
-  --     simp only [_root_.norm_eq_zero, imp_self]
-  --   smul' a x := by
-  --     simp only [Algebra.smul_def, norm_mul]
-  --     simp only [mul_eq_mul_right_iff, _root_.norm_eq_zero]
-  --     by_cases hc : x = 0
-  --     · right
-  --       exact hc
-  --     · left
-  --       have h1 : ‖a‖ = Valued.norm a := rfl
-  --       have h2 : ‖(algebraMap K L a)‖ = Valued.norm (algebraMap K L a) := rfl
-  --       rw [h1, h2]
-  --       unfold Valued.norm
-  --       rw [← Valuation.prolongs_by_ramificationIndex]
-  --       repeat sorry
-  -- }
-  -- have hna : IsNonarchimedean (Norm.norm (E := K)) := IsUltrametricDist.isNonarchimedean_norm
-  -- have h : f x = f (g x) := by
-  --   rw [spectralNorm_unique (f := f) _ hna, spectralAlgNorm_def hna, spectralAlgNorm_def hna, spectralNorm_eq_of_equiv]
-  --   unfold IsPowMul
-  --   intro a n hn
-  --   apply norm_pow a n
-  -- have h1 : ‖x‖ = ‖g x‖ := by
-  --   unfold f at h
-  --   exact h
-  -- apply le_antisymm
-  -- · apply Valued.toNormedField.norm_le_iff.1
-  --   apply le_of_eq h1
-  -- · apply Valued.toNormedField.norm_le_iff.1
-  --   apply le_of_eq h1.symm
 
 #check mem_decompositionGroup
 variable [CompleteSpace K]
@@ -347,13 +293,6 @@ theorem RamificationGroup_card_zero_comp_aux : (Nat.card G(K'/K)_[0] : ℝ) * (N
   exact Ideal_map_ne_bot K' L
   exact Ideal_map_ne_bot K L
   exact Ideal.map_maximalIdeal_le_maximalIdeal _ _
-
-  -- let e_K'K := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[K'])
-  -- let e_LK' := Ideal.ramificationIdx (algebraMap ↥𝒪[K'] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K']) (IsLocalRing.maximalIdeal ↥𝒪[L])
-  -- let e_LK := Ideal.ramificationIdx (algebraMap ↥𝒪[K] ↥𝒪[L]) (IsLocalRing.maximalIdeal ↥𝒪[K]) (IsLocalRing.maximalIdeal ↥𝒪[L])
-  -- have h : (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_K'K * e_LK') = (IsLocalRing.maximalIdeal 𝒪[L]) ^ (e_LK) := by
-  --   dsimp [e_K'K, e_LK', e_LK]
-  --   rw [← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K L), mul_comm, pow_mul, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K' L), ← Ideal.map_pow, ← maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx (IsValExtension.integerAlgebra_injective K K'), Ideal.map_map, ← IsScalarTower.algebraMap_eq]
 
 theorem phiDerivReal_integrableOn_section {k : ℤ} (hk : 0 ≤ k): IntegrableOn (phiDerivReal K L) (Set.Ioc (k : ℝ) (k + 1 : ℝ)) μ := by
   apply IntegrableOn.congr_fun_ae (f := fun x => (Nat.card G(L/K)_[⌈k + 1⌉] : ℝ) / (Nat.card G(L/K)_[0] : ℝ))

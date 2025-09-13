@@ -141,12 +141,6 @@ theorem extension_valuation_equiv_extendedValuation_of_discrete
   · rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
     apply mem_integer_of_mem_integral_closure h
 
-  -- haveI : vL.IsDiscrete := sorry
-  -- apply (isEquiv_of_le_one_le_one _).symm
-  -- intro x
-  -- rw [← mem_valuationSubring_iff, ← ValuationSubring.mem_toSubring, ← Extension.integralClosure_eq_integer]
-  -- apply mem_integer_of_mem_integral_closure h
-
 theorem extension_integer_eq_extendedValuation_of_discrete (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) :
   vL.integer = (extendedValuation K L).integer := by
   rw [← isEquiv_iff_integer]

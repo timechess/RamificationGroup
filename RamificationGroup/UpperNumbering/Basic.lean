@@ -9,6 +9,7 @@ import RamificationGroup.ForMathlib.AlgEquiv.Basic
 import RamificationGroup.ForMathlib.Unknow
 import RamificationGroup.KroneckerWeber.IsInvariant
 import Mathlib.RingTheory.IntegralClosure.Algebra.Defs
+import RamificationGroup.FromMathlib.FromMathlib
 -- import RamificationGroup.Valued.Hom.Discrete'
 
 /-!
@@ -24,6 +25,8 @@ section
 
 section upperRamificationGroup_aux
 
+
+#check Algebra.IsIntegral
 section definition_aux
 -- principle : first try to state a theorem in IsScalarTower, then try IntermediateField
 variable {K L : Type*} {ΓK : outParam Type*} [Field K] [Field L] [LinearOrderedCommGroupWithZero ΓK] [vK : Valued K ΓK] [vL : Valued L ℤₘ₀] [Algebra K L]
@@ -503,8 +506,21 @@ theorem lowerIndex_eq_inf (hsig : σ ≠ .refl) {s : L ≃ₐ[K] L} (h1 : s ∈ 
       push_neg at hc
       apply le_of_lt hc
 
+instance Valuation.IsDiscrete_comap (g : L ≃ₐ[K] L) : (Valuation.comap (R := L) g v).IsDiscrete (A := L) where
+  one_mem_range := by
+    obtain ⟨x, hx⟩ := IsDiscrete.one_mem_range (v := vL.v)
+    simp only [Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Set.mem_range, comap_apply, RingHom.coe_coe]
+    use g⁻¹ x
+    rw [show g (g⁻¹ x) = x from (eq_symm_apply g).mp rfl]
+    exact hx
 
-theorem Val_AlgEquiv_eq' (g : L ≃ₐ[K'] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by sorry
+open NormedField DiscreteValuation
+omit [Normal K L] [Algebra.IsSeparable K L] in
+variable [CompleteSpace K] in
+theorem Val_AlgEquiv_eq (g : L ≃ₐ[K] L) {x : L} (hx : x ∈ vL.v.integer) : vL.v x = vL.v (g x) := by
+  have h := algHom_preserve_val_of_complete (K := K) (L := L) g
+  rw [show vL.v (g x) = (vL.v.comap g) x by rfl]
+  exact DFunLike.congr (isEquiv_iff_eq.mp h) rfl
 
 
 -- instance : MulAction (L ≃ₐ[K'] L) ↥𝒪[L] where
@@ -519,9 +535,6 @@ theorem Val_AlgEquiv_eq' (g : L ≃ₐ[K'] L) {x : L} (hx : x ∈ vL.v.integer) 
 
 instance : MulSemiringAction (L ≃ₐ[K'] L) ↥𝒪[L] := IsIntegralClosure.MulSemiringAction 𝒪[K'] K' L 𝒪[L]
 
---exist already, need update
-theorem Valuation.HasExtension.val_algebraMap{R : Type u_1} {A : Type u_2} [CommRing R] [Ring A] [Algebra R A] {ΓR : Type*} {ΓA : Type*} [LinearOrderedCommGroupWithZero ΓR] [LinearOrderedCommGroupWithZero ΓA] {vR : Valuation R ΓR} {vA : Valuation A ΓA} [IsValExtension vR vA] (r : ↥vR.integer) :
-↑((algebraMap ↥vR.integer ↥vA.integer) r) = (algebraMap R A) ↑r := sorry
 
 instance : SMulCommClass (L ≃ₐ[K'] L) (↥𝒪[K']) (↥𝒪[L]) := SMul.comp.smulCommClass ⇑(galRestrict (↥𝒪[K']) K' L ↥𝒪[L]).toMonoidHom
 
@@ -540,11 +553,6 @@ variable [Algebra.IsSeparable K' L] [Normal K' L] in
 instance : Algebra.IsInvariant (↥𝒪[K']) (↥𝒪[L]) (L ≃ₐ[K'] L) :=
     haveI : IsGalois K' L := by constructor
     Algebra.isInvariant_of_isGalois 𝒪[K'] K' L 𝒪[L]
-
-
---exist already, need to update
-theorem algebraMap_isIntegral_iff{R : Type u_1} {A : Type u_3} [CommRing R] [Ring A] [Algebra R A] :
-(algebraMap R A).IsIntegral ↔ Algebra.IsIntegral R A := sorry
 
 #check IsLocalRing.maximalIdeal.isMaximal
 #check Ideal.isMaximal_comap_of_isIntegral_of_isMaximal'
@@ -621,7 +629,7 @@ theorem RamificationIdx_eq_card_of_inertia_group : (Nat.card G(L/K')_[0]) = (Loc
     /- sth with `ha`; easy -/
     rw [← mem_integer_iff]
     refine sub_mem ?_ ha
-    rw [mem_integer_iff, ← Val_AlgEquiv_eq' x ha]
+    rw [mem_integer_iff, ← Val_AlgEquiv_eq x ha]
     exact ha
 
 

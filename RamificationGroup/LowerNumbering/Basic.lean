@@ -792,6 +792,7 @@ theorem exist_lowerRamificationGroup_eq_bot [CompleteSpace K] [Algebra.IsSeparab
     letI : Subsingleton (L ≃ₐ[K] L) := not_nontrivial_iff_subsingleton.mp h
     apply Subsingleton.allEq
 
+
 end eq_bot
 
 end ExhausiveSeperated
