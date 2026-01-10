@@ -120,7 +120,9 @@ theorem nontrivial_of_valuation_extension (h : vK.v.IsEquiv <| vL.comap (algebra
 
 instance : IsIntegralClosure (↥vL.integer) (↥𝒪[K]) L := sorry
 
+
 /-- If a valuation `v : L → ℤₘ₀` extends a discrete valuation on `K`, then `v` is equivalent to `extendedValuation K L`.-/
+
 theorem extension_valuation_equiv_extendedValuation_of_discrete
   (h : vK.v.IsEquiv <| vL.comap (algebraMap K L)) :
     vL.IsEquiv (extendedValuation K L) := by

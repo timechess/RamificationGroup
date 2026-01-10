@@ -301,7 +301,6 @@ theorem phiReal_linear_section {n : ℕ} {x : ℝ} (h : x ∈ Set.Icc (n : ℝ) 
       symm
       simp only [ne_eq, Nat.cast_eq_zero, hc'', not_false_eq_true]
 
-
 theorem phiReal_HasDerivWithinAt {u : ℝ} (h : 0 ≤ u) : HasDerivWithinAt (phiReal K L) (phiDerivReal' K L u) (Set.Ici u) u := by
   have hu : ⌊u⌋.toNat = ⌊u⌋ := by
     apply Int.toNat_of_nonneg

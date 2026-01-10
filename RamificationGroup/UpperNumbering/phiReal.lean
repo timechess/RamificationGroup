@@ -116,7 +116,7 @@ instance {u : ℤ} : Subgroup.Normal (lowerRamificationGroup K L u) where
         exact ha
       let hn' := hn (g⁻¹ a) hg
       have hg' := mem_decompositionGroup g
-      rw [Val_AlgEquiv_eq K L g, _root_.map_sub] at hn'
+      rw [Val_AlgEquiv_eq g, _root_.map_sub] at hn'
       have hgg : g (g⁻¹ a) = a := by exact (eq_symm_apply g).mp rfl
       rw [hgg] at hn'
       exact hn'
