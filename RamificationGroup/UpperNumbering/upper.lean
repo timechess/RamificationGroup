@@ -2,7 +2,7 @@ import RamificationGroup.UpperNumbering.phiComp
 section
 open DiscreteValuation Valued Valuation HerbrandFunction
 
-variable {K L : Type*} [Field K] [Field L] [vK : Valued K ℤₘ₀] [IsDiscrete vK.v] [vL : Valued L ℤₘ₀] [IsDiscrete vL.v][Algebra K L] [FiniteDimensional K L] [IsValExtension vK.v vL.v] [CompleteSpace K]
+variable {K L : Type*} [Field K] [Field L] [vK : Valued K ℤₘ₀] [IsDiscrete vK.v] [vL : Valued L ℤₘ₀] [IsDiscrete vL.v] [Algebra K L] [FiniteDimensional K L] [IsValExtension vK.v vL.v] [CompleteSpace K]
 [Algebra.IsSeparable K L] [Algebra.IsSeparable (IsLocalRing.ResidueField 𝒪[K]) (IsLocalRing.ResidueField 𝒪[L])]
 
 local notation:max " G(" L:max "/" K:max ")^[" v:max "] " => upperRamificationGroup_aux K L v

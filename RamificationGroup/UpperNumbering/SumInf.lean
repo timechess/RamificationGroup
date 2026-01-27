@@ -5,13 +5,14 @@ import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 import Mathlib.Topology.Basic
 import Mathlib.Order.Filter.Basic
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.Int.Basic
+import Mathlib.Algebra.Order.GroupWithZero.Canonical
 
 
 open QuotientGroup IntermediateField DiscreteValuation Valued Valuation HerbrandFunction MeasureTheory.MeasureSpace intervalIntegral Pointwise AlgEquiv ExtDVR Asymptotics Filter intervalIntegral MeasureTheory Topology
 
-variable (R S : Type*) [CommRing R] [Ring S] [Algebra R S] [Fintype (S ≃ₐ[R] S)] [Finite (S ≃ₐ[R] S)] [vS : Valued S ℤₘ₀] [DecidableEq (S ≃ₐ[R] S)]
-
-noncomputable def μ : MeasureTheory.Measure ℝ := MeasureTheory.volume
+variable (R S : Type*) [CommRing R] [Field S] [Algebra R S] [Fintype (S ≃ₐ[R] S)] [vS : Valued S ℤₘ₀] [DecidableEq (S ≃ₐ[R] S)]
+#check Valuation.IsEquiv
 
 noncomputable def phiReal (u : Real) : Real := (1 /(Nat.card ↥ G(S/R)_[0])) * (∑ x ∈ Finset.Icc 1 (⌈u⌉ - 1), (Nat.card G(S/R)_[(max 0 x)] : ℝ) + (u - (max 0 (⌈u⌉ - 1))) * (Nat.card G(S/R)_[(max 0 ⌈u⌉)] : ℝ))
 
@@ -19,36 +20,98 @@ noncomputable def AlgEquiv.truncatedLowerIndexReal (u : ℝ) (s : (S ≃ₐ[R] S
     if h : i_[S/R] s = ⊤ then u
     else min u ((i_[S/R] s).untop h)
 
+theorem lowerRamificationGroup_le_decompositionGroup {n : ℤ} : G(S/R)_[n] ≤ decompositionGroup R S := by
+  unfold lowerRamificationGroup
+  intro s hs
+  simp only [neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, Subgroup.mem_mk, Set.mem_setOf_eq] at hs
+  exact hs.left
+
 open Multiplicative in
-theorem mem_lowerRamificationGroup_iff {s : S ≃ₐ[R] S} (hs' : s ∈ decompositionGroup R S) (n : ℕ) : s ∈ G(S/R)_[n] ↔ n + 1 ≤ i_[S/R] s := by sorry
+theorem le_toAdd_iff {a : ℤ} {b : ℤ} : b ≤ ofAdd a ↔ toAdd b ≤ a := ⟨fun a ↦ a, fun a ↦ a⟩
 
-theorem lowerIndex_ne_one' {s : S ≃ₐ[R] S} (hs' : s ∈ decompositionGroup R S) (hs : s ≠ .refl) : i_[S/R] s ≠ ⊤ := by sorry
+--already exist in Mathlib
+theorem WithZero.unbot_le_iff{α : Type u_1} [LE α] [LE (WithZero α)] {x : WithZero α} {b : α} (hx : x ≠ 0) :
+unzero hx ≤ b ↔ x ≤ (b : WithZero α) := by sorry
 
-theorem lowerIndex_pos {s : S ≃ₐ[R] S} (hs : s ∈ decompositionGroup R S ) : i_[S/R] s ≥ 0 := by sorry
+theorem Int.add_neg_eq_sub {a b : ℤ} : a + -b = a - b := rfl
+
+theorem BddAbove_value_autCongr {s : S ≃ₐ[R] S} (hs : s ∈ decompositionGroup R S) : BddAbove (Set.range fun x : vS.v.integer ↦ v (s ↑x - ↑x)) := by
+  use 1
+  apply mem_upperBounds.2
+  rintro x ⟨hx1, hx2⟩
+  simp only [← hx2]
+  obtain h := (vS.v.map_add_le_max' (s hx1) (- hx1))
+  simp only [ZeroHom.toFun_eq_coe, MonoidWithZeroHom.toZeroHom_coe, toMonoidWithZeroHom_coe_eq_coe, Valuation.map_neg, show (s hx1 + - hx1) = (s hx1 - hx1) by ring] at h
+  apply le_trans h
+  apply sup_le_iff.2
+  constructor
+  · have h : s hx1 ∈ vS.v.integer := by
+      apply (vS.v.mem_integer_iff _).2
+      suffices hx : hx1.1 ∈ (vS.v.comap s.toRingHom).integer by exact hx
+      simp only [(Valuation.isEquiv_iff_integer (v.comap s.toRingHom) v).1 hs.symm]
+      exact hx1.2
+    exact h
+  · exact hx1.2
+
+open Multiplicative in
+theorem mem_lowerRamificationGroup_iff {s : S ≃ₐ[R] S} (hs' : s ∈ decompositionGroup R S) (n : ℕ) : s ∈ G(S/R)_[n] ↔ n + 1 ≤ i_[S/R] s := by
+  simp only [lowerRamificationGroup, Subtype.forall, Subgroup.mem_mk, Set.mem_setOf_eq, AlgEquiv.lowerIndex]
+  by_cases hrefl : s = .refl
+  · simp only [hrefl, AlgEquiv.coe_refl, id_eq, sub_self, _root_.map_zero, ofAdd_sub, ofAdd_neg,
+    zero_le', implies_true, and_true, ciSup_const, ↓reduceDIte, le_top, iff_true]
+    exact refl_mem_decompositionGroup R S
+  · have hne0 : ¬ ⨆ x : vS.v.integer, vS.v (s x - x) = 0 := by rw [iSup_val_map_sub_eq_zero_iff_eq_refl hs']; exact hrefl
+    constructor
+    · intro ⟨_, hs⟩
+      simp only [hne0, ↓reduceDIte]
+      simp only [← Nat.cast_one (R := ℕ∞), ← Nat.cast_add, Nat.cast_le]
+      rw [← Nat.cast_le (α := ℤ), Int.toNat_of_nonneg]
+      suffices (WithZero.unzero hne0) ≤ ofAdd (- (n : ℤ) - 1) by
+        rw [Nat.cast_add, Nat.cast_one, le_neg, ← le_toAdd_iff, neg_add_rev, add_comm, Int.add_neg_eq_sub]
+        exact this
+      exact (WithZero.unbot_le_iff hne0).2 (ciSup_le (fun x => hs x (SetLike.coe_mem x)))
+      simp only [Left.nonneg_neg_iff, ← le_toAdd_iff, ofAdd_zero, WithZero.unbot_le_iff hne0]
+      exact ciSup_le (fun x => val_map_sub_le_one hs' x)
+    · intro hs
+      refine ⟨hs', ?_⟩
+      intro a ha
+      by_cases ha1 : v (s a - a) = 0
+      · simp only [ha1, ofAdd_sub, ofAdd_neg, zero_le']
+      · apply (WithZero.unbot_le_iff ha1).1
+        apply le_toAdd_iff.2
+        simp only [hne0, ↓reduceDIte, ← Nat.cast_one (R := ℕ∞), ← Nat.cast_add, Nat.cast_le] at hs
+        rw [← Nat.cast_le (α := ℤ), Int.toNat_of_nonneg, Nat.cast_add, le_neg, neg_add, Int.add_neg_eq_sub, Nat.cast_one] at hs
+        exact le_trans (toAdd_le.2 ((WithZero.unzero_le_unzero ha1 hne0).2 (le_ciSup (f := fun (x : vS.v.integer) ↦ v (s x - x)) (BddAbove_value_autCongr R S hs') ⟨a, ha⟩))) hs
+        simp only [Left.nonneg_neg_iff, ← le_toAdd_iff, ofAdd_zero, WithZero.unbot_le_iff hne0]
+        exact ciSup_le (fun x => val_map_sub_le_one hs' x)
+
+theorem lowerIndex_pos {s : S ≃ₐ[R] S} : i_[S/R] s ≥ 0 := by
+  unfold lowerIndex
+  simp only [zero_le]
 
 noncomputable instance : Fintype (decompositionGroup R S : Set (S ≃ₐ[R] S)) :=  Fintype.ofFinite (decompositionGroup R S)
 
-noncomputable instance : Fintype (G(S/R)_[0] : Set (S ≃ₐ[R] S)) := Fintype.ofFinite G(S/R)_[0]
+noncomputable instance {n : ℤ} : Fintype (G(S/R)_[n] : Set (S ≃ₐ[R] S)) := Fintype.ofFinite G(S/R)_[n]
 
-noncomputable instance : Fintype G(S/R)_[0] := Fintype.ofFinite G(S/R)_[0]
+noncomputable instance {n : ℤ} : Fintype G(S/R)_[n] := Fintype.ofFinite G(S/R)_[n]
 
-theorem auxx {u : ℝ} (hu1 : u ≤ 1) (hu2 : 0 ≤ u) :  ∑ x ∈ ((decompositionGroup R S : Set (S ≃ₐ[R] S))).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x + ∑ x ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x = ∑ x ∈ ((decompositionGroup R S : Set (S ≃ₐ[R] S))).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, 0 + ∑ x ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x := by
-  rw [add_right_cancel_iff]
+theorem decompositionGroup_eq_diff (n : ℤ) : (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset = (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ ((G(S/R)_[n] : Set (S ≃ₐ[R] S)).toFinset) ∪ ((G(S/R)_[n] : Set (S ≃ₐ[R] S)).toFinset) := by
+    simp only [Finset.sdiff_union_self_eq_union, Finset.left_eq_union, Set.subset_toFinset, Set.coe_toFinset, SetLike.coe_subset_coe]
+    exact lowerRamificationGroup_le_decompositionGroup R S
+
+theorem auxx {u : ℝ} (hu2 : 0 ≤ u) :  ∑ x ∈ ((decompositionGroup R S : Set (S ≃ₐ[R] S))).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x = ∑ _ ∈ ((decompositionGroup R S : Set (S ≃ₐ[R] S))).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, 0 := by
   have h : ∀ i ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u i = 0 := by
     simp only [Finset.mem_sdiff, Set.mem_toFinset, SetLike.mem_coe, and_imp]
     intro i hi1 hi2
     unfold truncatedLowerIndexReal
-    have h : i_[S/R] i ≠ ⊤ := by
-      apply lowerIndex_ne_one' R S hi1
-      by_contra hc
-      apply hi2
-      rw [hc]
-      apply Subgroup.one_mem G(S/R)_[0]
+    have h : i_[S/R] i ≠ ⊤ := WithTop.lt_top_iff_ne_top.1 (lt_of_lt_of_le (lt_of_not_ge (mt (mem_lowerRamificationGroup_iff R S hi1 0).2 hi2)) (OrderTop.le_top _))
     simp only [h, ↓reduceDIte]
     have : i_[S/R] i = 0 := by
-      apply eq_of_ge_of_not_gt (lowerIndex_pos R S hi1)
-      
-      sorry
+      apply eq_of_ge_of_not_gt (lowerIndex_pos R S)
+      by_contra hc
+      have hle : 1 ≤ i_[S/R] i := Order.one_le_iff_pos.mpr hc
+      apply hi2
+      exact (mem_lowerRamificationGroup_iff R S hi1 0).2 hle
     rw[min_eq_right]
     · simp only [Nat.cast_eq_zero, this, WithTop.untop_zero]
     · simp only [this, WithTop.untop_zero]
@@ -58,26 +121,34 @@ theorem auxx {u : ℝ} (hu1 : u ≤ 1) (hu2 : 0 ≤ u) :  ∑ x ∈ ((decomposit
   exact h
   exact fun i hi ↦ le_of_eq (h i hi)
 
+theorem auxx_1 {n : ℕ} {u : ℝ} (hu1 : u ≤ n + 1) :
+    ∑ x ∈ (G(S/R)_[n] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x = ∑ _ ∈ (G(S/R)_[n] : Set (S ≃ₐ[R] S)).toFinset, u := by
+  have h : ∀ i ∈ (G(S/R)_[n] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u i = u := by
+      simp only [Set.mem_toFinset, SetLike.mem_coe]
+      intro i hi
+      unfold truncatedLowerIndexReal
+      by_cases hc : i_[S/R] i = ⊤
+      · simp only [hc, ↓reduceDIte]
+      · simp only [hc, ↓reduceDIte, inf_eq_left]
+        apply le_trans hu1
+        rw [← Nat.cast_one, ← Nat.cast_add, Nat.cast_le]
+        apply (WithTop.le_untop_iff hc).2
+        simp only [WithTop.coe_add, ENat.some_eq_coe, WithTop.coe_one]
+        apply (mem_lowerRamificationGroup_iff R S ((lowerRamificationGroup_le_decompositionGroup R S) hi) n).1 hi
+  apply (Finset.sum_eq_sum_iff_of_le ?_).2
+  exact h
+  exact fun i hi => le_of_eq (h i hi)
+
 theorem sum_truncatedLowerIndexReal_eq_of_le_one {u : ℝ} (hu1 : u ≤ 1) (hu2 : 0 ≤ u) : ∑ x ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x = (Nat.card G(S/R)_[0]) * u := by
-  have hunion : (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset = (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ ((G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset) ∪ ((G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset) := by
-    simp only [Finset.sdiff_union_self_eq_union, Finset.left_eq_union, Set.subset_toFinset, Set.coe_toFinset, SetLike.coe_subset_coe]
-    unfold lowerRamificationGroup
-    intro s hs
-    simp only [neg_zero, zero_sub, Int.reduceNeg, ofAdd_neg, WithZero.coe_inv, Subtype.forall, Subgroup.mem_mk, Set.mem_setOf_eq] at hs
-    exact hs.left
-  rw [hunion, Finset.sum_union]
+  rw [decompositionGroup_eq_diff R S 0, Finset.sum_union]
   calc
     _ = ∑ x ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, 0 +
-    ∑ x ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x :=  auxx R S hu1 hu2
+    ∑ x ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u x := by rw [auxx R S hu2]
     _ = ∑ x ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, u := by
-      rw [Finset.sum_const, smul_zero, zero_add]
-      have h : ∀ i ∈ (G(S/R)_[0] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S u i = u := by
-        simp only [Set.mem_toFinset, SetLike.mem_coe]
-        intro i hi
-        sorry
-      apply (Finset.sum_eq_sum_iff_of_le ?_).2
-      exact h
-      exact fun i hi => le_of_eq (h i hi)
+      have hu1' : u ≤ (0 : ℕ) + 1 := by rw [Nat.cast_zero, zero_add]; exact hu1
+      obtain h := auxx_1 R S (n := 0) (u := u) hu1'
+      simp only [CharP.cast_eq_zero] at h
+      rw [Finset.sum_const, smul_zero, zero_add, h]
     _ = _ := by
       simp only [Finset.sum_const, Set.toFinset_card, SetLike.coe_sort_coe, nsmul_eq_mul, Nat.card_eq_fintype_card, mul_eq_mul_right_iff, Nat.cast_inj]
   exact Finset.sdiff_disjoint
@@ -147,13 +218,54 @@ theorem a {n : ℕ} : ∀ x ∈ Set.Ico (n : ℝ) (n + 1 : ℝ), HasDerivWithinA
   unfold linear_fn
   exact phiReal_linear_section R S hx'
 
+theorem sum_diff_eq_floor {n : ℕ} {y : ℝ} (hy : n ≤ y) : ∑ x ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ ((G(S/R)_[(n + 1)] : Set (S ≃ₐ[R] S)).toFinset), truncatedLowerIndexReal R S (y + 1) x = ∑ x ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset \ ((G(S/R)_[(n + 1)] : Set (S ≃ₐ[R] S)).toFinset), truncatedLowerIndexReal R S (n + 1) x := by
+  have h : ∀ i ∈ ((decompositionGroup R S) : Set (S ≃ₐ[R] S)).toFinset \ (G(S/R)_[(n + 1)] : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S (n + 1) i = truncatedLowerIndexReal R S (y + 1) i := by
+    intro i hi
+    simp only [Finset.mem_sdiff, Set.mem_toFinset, SetLike.mem_coe] at hi
+    rcases hi with ⟨hi1, hi2⟩
+    unfold truncatedLowerIndexReal
+    have hnetop : i_[S/R] i ≠ ⊤ := by
+      by_contra hc
+      apply hi2
+      rw [(lowerIndex_eq_top_iff_eq_refl hi1).1 hc]
+      exact Subgroup.one_mem _
+    simp only [hnetop, ↓reduceDIte]
+    have h : (WithTop.untop ( i_[S/R] i) hnetop) ≤ (n : ℝ) + 1 := by
+      by_contra hc
+      push_neg at hc
+      apply hi2
+      apply (mem_lowerRamificationGroup_iff R S hi1 (n + 1)).2
+      rw [← Nat.cast_one (R := ℝ), ← Nat.cast_add, Nat.cast_lt] at hc
+      rw [show ↑((n + 1 : ℕ) : ℕ∞) + (1 : ℕ∞) = ((n + 1 + 1 : ℕ) : ℕ∞) by rfl]
+      exact (WithTop.le_untop_iff hnetop).1 (Nat.succ_le_of_lt hc)
+    rw [min_eq_right, min_eq_right]
+    exact le_trans h (by linarith [hy])
+    exact h
+  apply Eq.symm ((Finset.sum_eq_sum_iff_of_le _).mpr _)
+  exact fun i hi => le_of_eq (h i hi)
+  exact h
+
+
+theorem aux_linear_section {n : ℕ} {x : ℝ} (hx : x ∈ Set.Ico (n : ℝ) (n + 1 : ℝ)) : (fun y => ∑ t ∈ ((decompositionGroup R S) : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S (y + 1) t) =ᶠ[𝓝[≥] x] (fun y => ∑ t ∈ ((decompositionGroup R S) : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S (n + 1) t + (y - n) * (Nat.card G(S/R)_[(n + 1)])) := by
+  filter_upwards [Ico_mem_nhdsGE_of_mem ⟨le_refl x, hx.right⟩] with y hy
+  have hy1 : y + 1 ≤ (n + 1 : ℕ) + 1 := by rw [Nat.cast_add, Nat.cast_one]; linarith [hy.2]
+  have hn1 : (n : ℝ) + 1 ≤ (n + 1 : ℕ) + 1 := by rw [Nat.cast_add, Nat.cast_one]; linarith
+  obtain hy2 := auxx_1 R S hy1
+  obtain hn2 := auxx_1 R S (n := n + 1) (u := n + 1) hn1
+  simp only [Nat.cast_add, Nat.cast_one] at hy2 hn2
+  rw [decompositionGroup_eq_diff R S (n + 1), Finset.sum_union (Finset.sdiff_disjoint), Finset.sum_union (Finset.sdiff_disjoint), sum_diff_eq_floor R S (le_trans hx.1 hy.1), add_assoc, add_left_cancel_iff, hy2, hn2, Finset.sum_const, Finset.sum_const]
+  simp only [Set.toFinset_card, SetLike.coe_sort_coe, smul_add, nsmul_eq_mul, mul_one,
+    Nat.card_eq_fintype_card]
+  ring
 
 theorem b {n : ℕ} : ∀ x ∈ Set.Ico (n : ℝ) (n + 1 : ℝ), HasDerivWithinAt (fun u ↦ 1 / ↑(Nat.card ↥ G(S/R)_[0] ) * ∑ x ∈ (decompositionGroup R S : Set (S ≃ₐ[R] S)).toFinset, truncatedLowerIndexReal R S (u + 1) x - 1) ((1 / (Nat.card ↥ G(S/R)_[0] : ℝ) * (Nat.card G(S/R)_[(↑n + 1)]))) (Set.Ici x) x := by
   intro x hx
-  apply HasDerivWithinAt.sub_const
-  apply HasDerivWithinAt.const_mul
-  unfold AlgEquiv.truncatedLowerIndexReal
-  sorry
+  apply ((HasDerivWithinAt.congr_of_eventuallyEq _ (aux_linear_section R S hx) _).const_mul _).sub_const _
+  · obtain h := ((hasDerivWithinAt_id x (Set.Ici x)).const_mul (Nat.card G(S/R)_[((n : ℤ) + 1)] : ℝ)).sub_const ((Nat.card G(S/R)_[((n : ℤ) + 1)] : ℝ) * n)
+    simp only [id_eq, mul_one] at h
+    simp only [mul_comm _ (Nat.card G(S/R)_[(n + 1)] : ℝ), mul_sub]
+    exact h.const_add _
+  · simpa using (aux_linear_section R S hx).eq_of_nhdsWithin
 
 theorem c {n : ℕ} : ContinuousOn (phiReal R S) (Set.Icc (↑n) (↑n + 1)) := by
   let g : ℝ → ℝ := fun x => phiReal R S n + (1 / Nat.card G(S/R)_[0] : ℝ) * (Nat.card G(S/R)_[(n + 1)]) * (x - n)
